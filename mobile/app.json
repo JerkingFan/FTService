@@ -1,0 +1,44 @@
+{
+  "expo": {
+    "name": "FTservice",
+    "slug": "ftservice",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#e85d04"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "kg.ftservice.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#e85d04"
+      },
+      "package": "kg.ftservice.app",
+      "usesCleartextTraffic": true,
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION"
+      ]
+    },
+    "extra": {
+      "demoMode": false,
+      "apiUrl": "http://10.0.2.2:8000/api"
+    },
+    "plugins": [
+      "expo-asset",
+      [
+        "expo-font",
+        {
+          "fonts": ["./assets/fonts/ionicons.ttf"]
+        }
+      ]
+    ]
+  }
+}

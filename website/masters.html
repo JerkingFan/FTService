@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Мастера — FTservice</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/auth.css">
+  <link rel="stylesheet" href="css/icons.css">
+</head>
+<body>
+  <header class="header">
+    <div class="container header__inner">
+      <a href="index.html" class="logo">
+        <div class="logo__mark">FT</div>
+        <div class="logo__text">FT<span>service</span></div>
+      </a>
+      <nav class="nav">
+        <a href="parts.html">Запчасти</a>
+        <a href="masters.html">Мастера</a>
+        <a href="cabinet.html">Личный кабинет</a>
+        <a href="help.html">Помощь</a>
+      </nav>
+      <div class="header__actions">
+        <a href="cabinet.html" class="btn btn--outline btn--sm">Войти</a>
+        <button class="btn btn--primary btn--sm" data-modal="add-modal">Подать объявление</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="breadcrumb"><a href="index.html">Главная</a> / Мастера</div>
+    <div class="section__header" style="padding:24px 0 16px;">
+      <div>
+        <h1 class="section__title">Автоэлектрики Бишкека</h1>
+        <p class="section__subtitle">Проверенные мастера · запись по времени</p>
+      </div>
+      <div class="masters-toolbar">
+        <button type="button" class="btn btn--primary" id="btn-nearby-masters">Ближайшие по GPS</button>
+        <a href="booking.html?service=diagnostic" class="btn btn--outline">Диагностика от 500 сом</a>
+      </div>
+    </div>
+    <p class="masters-gps-status" id="masters-gps-status"></p>
+    <div class="alert alert--info">Каждый мастер прошёл анкету. Только автоэлектрики.</div>
+    <div style="display:flex;flex-direction:column;gap:12px;padding-bottom:48px;" id="masters-list"></div>
+  </div>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer__bottom" style="border:none;padding:0;">
+        <span>© 2026 FTservice</span>
+        <a data-whatsapp style="color:#e85d04;">WhatsApp</a>
+        <a data-telegram style="color:#e85d04;">Telegram</a>
+      </div>
+    </div>
+  </footer>
+
+  <div class="modal-overlay" id="add-modal"><div class="modal"></div></div>
+  <script src="js/icons.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/auth-ui.js"></script>
+</body>
+</html>

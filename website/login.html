@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Вход — FTservice</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/auth.css">
+</head>
+<body>
+  <header class="header">
+    <div class="container header__inner">
+      <a href="index.html" class="logo">
+        <div class="logo__mark">FT</div>
+        <div class="logo__text">FT<span>service</span></div>
+      </a>
+      <nav class="nav">
+        <a href="parts.html">Запчасти</a>
+        <a href="masters.html">Мастера</a>
+        <a href="cabinet.html">Личный кабинет</a>
+        <a href="help.html">Помощь</a>
+      </nav>
+      <div class="header__actions"></div>
+    </div>
+  </header>
+
+  <main class="auth-page">
+    <div class="auth-card">
+      <h1>Вход</h1>
+      <p class="auth-card__subtitle">Войдите, чтобы записаться к мастеру и видеть историю</p>
+      <div id="auth-error" class="auth-error"></div>
+      <form id="login-form" class="auth-form">
+        <div class="form-row">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" required autocomplete="email" placeholder="you@mail.kg">
+        </div>
+        <div class="form-row">
+          <label for="password">Пароль</label>
+          <input type="password" id="password" name="password" required autocomplete="current-password" minlength="6">
+        </div>
+        <button type="submit" class="btn btn--primary btn--full">Войти</button>
+      </form>
+      <p class="auth-footer">Нет аккаунта? <a href="register.html">Регистрация</a></p>
+      <div class="auth-hint">Тест: buyer@test.kg / buyer123</div>
+    </div>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth-ui.js"></script>
+</body>
+</html>

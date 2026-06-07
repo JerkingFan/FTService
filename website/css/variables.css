@@ -1,0 +1,23 @@
+:root {
+  --orange: #e8640a;
+  --orange-dark: #c95508;
+  --orange-light: #fff8f3;
+  --yellow: #f5a623;
+  --black: #1a1a1a;
+  --gray-900: #2d2d2d;
+  --gray-700: #4a4a4a;
+  --gray-500: #6b6b6b;
+  --gray-300: #ddd;
+  --gray-100: #f4f4f4;
+  --white: #ffffff;
+  --green: #2d6a4f;
+  --green-light: #e8f5e9;
+  --red: #c1121f;
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.1);
+  --radius: 8px;
+  --radius-lg: 12px;
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --max-width: 1200px;
+  --header-height: 64px;
+}

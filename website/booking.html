@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Запись — FTservice</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/icons.css">
+  <link rel="stylesheet" href="css/auth.css">
+</head>
+<body>
+  <header class="header">
+    <div class="container header__inner">
+      <a href="index.html" class="logo">
+        <div class="logo__mark">FT</div>
+        <div class="logo__text">FT<span>service</span></div>
+      </a>
+      <nav class="nav">
+        <a href="parts.html">Запчасти</a>
+        <a href="masters.html">Мастера</a>
+        <a href="cabinet.html">Личный кабинет</a>
+        <a href="help.html">Помощь</a>
+      </nav>
+      <div class="header__actions">
+        <a href="cabinet.html" class="btn btn--outline btn--sm">Войти</a>
+        <button class="btn btn--primary btn--sm" data-modal="add-modal">Подать объявление</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="container" style="max-width:640px;padding:32px 16px 48px;">
+    <div class="breadcrumb"><a href="index.html">Главная</a> / Запись</div>
+    <div class="cabinet-panel">
+      <h2>Запись к мастеру</h2>
+      <p style="color:#6b6b6b;margin-bottom:20px;font-size:14px;">Выберите мастера, дату и время</p>
+      <div id="booking-auth-notice" class="booking-login-notice" style="display:none;">
+        Для записи <a href="login.html?next=booking.html">войдите</a> или <a href="register.html">зарегистрируйтесь</a>.
+      </div>
+      <form id="booking-form">
+        <div class="form-row"><label>Мастер</label>
+          <select name="master" required>
+            <option value="">Загрузка…</option>
+          </select>
+        </div>
+        <div class="form-row"><label>Услуга</label>
+          <select name="service" required>
+            <option value="diagnostic">Диагностика (от 500 сом)</option>
+            <option value="repair">Ремонт электрики</option>
+            <option value="install">Установка запчасти</option>
+          </select>
+        </div>
+        <div class="form-row"><label>Дата</label><input type="date" name="date" required></div>
+        <div class="form-row"><label>Время</label>
+          <div class="time-slots">
+            <button type="button" class="time-slot">09:00</button>
+            <button type="button" class="time-slot">10:00</button>
+            <button type="button" class="time-slot">11:00</button>
+            <button type="button" class="time-slot">14:00</button>
+            <button type="button" class="time-slot">15:00</button>
+            <button type="button" class="time-slot">16:00</button>
+          </div>
+        </div>
+        <div class="form-row"><label>Телефон</label><input type="tel" name="phone" placeholder="+996" required></div>
+        <div class="form-row"><label>Проблема</label><textarea name="problem"></textarea></div>
+        <button type="submit" class="btn btn--primary btn--lg" style="width:100%;">Записаться</button>
+      </form>
+      <div id="booking-success" style="display:none;">
+        <div class="alert alert--success">Заявка отправлена!</div>
+        <a href="cabinet.html" class="btn btn--outline">В кабинет</a>
+      </div>
+    </div>
+  </div>
+
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer__bottom" style="border:none;padding:0;">
+        <span>© 2026 FTservice</span>
+        <a data-whatsapp style="color:#e85d04;">WhatsApp</a>
+      </div>
+    </div>
+  </footer>
+
+  <div class="modal-overlay" id="add-modal">
+    <div class="modal">
+      <button class="modal__close">закрыть</button>
+      <h2>Разместить объявление</h2>
+      <p>Отправьте в WhatsApp — менеджер опубликует после модерации.</p>
+      <a class="btn btn--primary btn--lg" style="width:100%;margin-top:16px;" data-whatsapp>WhatsApp</a>
+    </div>
+  </div>
+
+  <script src="js/icons.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/auth-ui.js"></script>
+</body>
+</html>

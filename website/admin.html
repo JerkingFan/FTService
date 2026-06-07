@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Панель управления — FTservice</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/auth.css">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+  <header class="header">
+    <div class="container header__inner">
+      <a href="index.html" class="logo">
+        <div class="logo__mark">FT</div>
+        <div class="logo__text">FT<span>service</span></div>
+      </a>
+      <nav class="nav">
+        <a href="parts.html">Запчасти</a>
+        <a href="masters.html">Мастера</a>
+        <a href="cabinet.html">Личный кабинет</a>
+        <a href="help.html">Помощь</a>
+      </nav>
+      <div class="header__actions"></div>
+    </div>
+  </header>
+
+  <div class="container admin-page">
+    <div id="admin-root">
+      <p style="color:#6b6b6b;">Загрузка…</p>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer__bottom" style="border:none;padding:0;">
+        <span>© 2026 FTservice</span>
+        <a href="index.html">На главную</a>
+      </div>
+    </div>
+  </footer>
+
+  <div id="admin-toast" class="admin-toast"></div>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth-ui.js"></script>
+  <script src="js/admin-ui.js"></script>
+  <script src="js/admin-panel.js"></script>
+</body>
+</html>
