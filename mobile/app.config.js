@@ -9,7 +9,7 @@ module.exports = ({ config }) => {
   const apiUrl =
     process.env.EXPO_PUBLIC_API_URL ||
     config.extra?.apiUrl ||
-    "http://10.0.2.2:8000/api";
+    "http://213.155.9.130/api";
 
   return {
     ...config,

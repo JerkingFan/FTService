@@ -18,4 +18,4 @@ export const DEMO_MODE =
 export const API_BASE =
   process.env.EXPO_PUBLIC_API_URL?.replace(/\/$/, "") ||
   extra.apiUrl?.replace(/\/$/, "") ||
-  "http://10.0.2.2:8000/api";
+  "http://213.155.9.130/api";

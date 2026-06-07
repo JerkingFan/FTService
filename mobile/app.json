@@ -29,7 +29,7 @@
     },
     "extra": {
       "demoMode": false,
-      "apiUrl": "http://10.0.2.2:8000/api"
+      "apiUrl": "http://213.155.9.130/api"
     },
     "plugins": [
       "expo-asset",
