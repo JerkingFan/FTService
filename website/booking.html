@@ -28,11 +28,11 @@
     </div>
   </header>
 
-  <div class="container" style="max-width:640px;padding:32px 16px 48px;">
+  <div class="container page-narrow">
     <div class="breadcrumb"><a href="index.html">Главная</a> / Запись</div>
     <div class="cabinet-panel">
       <h2>Запись к мастеру</h2>
-      <p style="color:#6b6b6b;margin-bottom:20px;font-size:14px;">Выберите мастера, дату и время</p>
+      <p class="booking-lead">Мастер, дата и время</p>
       <div id="booking-auth-notice" class="booking-login-notice" style="display:none;">
         Для записи <a href="login.html?next=booking.html">войдите</a> или <a href="register.html">зарегистрируйтесь</a>.
       </div>
@@ -62,7 +62,7 @@
         </div>
         <div class="form-row"><label>Телефон</label><input type="tel" name="phone" placeholder="+996" required></div>
         <div class="form-row"><label>Проблема</label><textarea name="problem"></textarea></div>
-        <button type="submit" class="btn btn--primary btn--lg" style="width:100%;">Записаться</button>
+        <button type="submit" class="btn btn--primary btn--lg btn--full">Записаться</button>
       </form>
       <div id="booking-success" style="display:none;">
         <div class="alert alert--success">Заявка отправлена!</div>
@@ -72,11 +72,11 @@
   </div>
 
 
-  <footer class="footer">
+  <footer class="footer footer--simple">
     <div class="container">
-      <div class="footer__bottom" style="border:none;padding:0;">
+      <div class="footer__bottom">
         <span>© 2026 FTservice</span>
-        <a data-whatsapp style="color:#e85d04;">WhatsApp</a>
+        <a data-whatsapp class="footer__contact">WhatsApp</a>
       </div>
     </div>
   </footer>
@@ -86,7 +86,7 @@
       <button class="modal__close">закрыть</button>
       <h2>Разместить объявление</h2>
       <p>Отправьте в WhatsApp — менеджер опубликует после модерации.</p>
-      <a class="btn btn--primary btn--lg" style="width:100%;margin-top:16px;" data-whatsapp>WhatsApp</a>
+      <a class="btn btn--primary btn--lg btn--block" data-whatsapp>WhatsApp</a>
     </div>
   </div>
 

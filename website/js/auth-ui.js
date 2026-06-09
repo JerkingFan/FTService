@@ -1,5 +1,3 @@
-/** Авторизация: шапка, защита страниц, кабинет */
-
 function escapeHtml(s) {
   const d = document.createElement("div");
   d.textContent = s;
@@ -70,7 +68,7 @@ async function refreshSession() {
 
 async function requireAuth() {
   if (!(await checkApi())) {
-    alert("API не запущен. Запустите бэкенд на порту 8000.");
+    alert("Сервис временно недоступен.");
     return false;
   }
   if (!getToken()) {
@@ -125,7 +123,7 @@ async function loadCabinetPage() {
 
   if (!(await requireAuth())) return;
 
-  root.innerHTML = '<p style="padding:24px;color:var(--gray-500);">Загрузка…</p>';
+  root.innerHTML = '<p class="loading-hint">Загрузка…</p>';
 
   try {
     const data = await api.getCabinet();
@@ -213,7 +211,7 @@ function initLoginPage() {
     btn.disabled = true;
     btn.textContent = "Вход…";
     try {
-      if (!(await checkApi())) throw new Error("Сервер не отвечает. Запустите API: uvicorn app.main:app --reload");
+      if (!(await checkApi())) throw new Error("Сервис временно недоступен");
       await api.login(fd.get("email"), fd.get("password"));
       renderAuthHeader();
       location.href = next;
@@ -267,7 +265,7 @@ function initRegisterPage() {
     btn.disabled = true;
     btn.textContent = "Регистрация…";
     try {
-      if (!(await checkApi())) throw new Error("Сервер не отвечает. Запустите API на порту 8000");
+      if (!(await checkApi())) throw new Error("Сервис временно недоступен");
       const data = await api.register({
         email: fd.get("email"),
         password,

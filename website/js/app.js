@@ -1,18 +1,9 @@
 const WHATSAPP_MSG = encodeURIComponent(
-  "Здравствуйте! Хочу разместить объявление на FTservice.\n\n" +
-  "Тип: (запчасть / услуга)\n" +
-  "Название:\n" +
-  "Артикул / OEM:\n" +
-  "Цена (обязательно):\n" +
-  "Состояние: б/у или новая\n" +
-  "Автомобиль:\n" +
-  "Подходит для:\n" +
-  "Район:\n" +
-  "Фото: (прикреплю)"
+  "Здравствуйте! Хочу выложить объявление на FTservice — пришлю название, цену и фото."
 );
 
 const TELEGRAM_MSG = encodeURIComponent(
-  "Здравствуйте! Хочу разместить объявление на FTservice."
+  "Здравствуйте! Хочу выложить объявление на FTservice."
 );
 
 function openModal(id) {
@@ -66,13 +57,6 @@ async function initMessengers() {
   await initTelegram();
 }
 
-const GUIDE_STEPS = [
-  { icon: "search", title: "FTservice — маркетплейс", text: "Запчасти с ценой в сомах, мастера с записью. Поиск по артикулу и совместимости с авто." },
-  { icon: "part", title: "Покупка детали", text: "Артикул, блок «Подходит для», телефон продавца и режим работы — на карточке объявления." },
-  { icon: "calendar", title: "Запись к мастеру", text: "Найдите ближайшего мастера по GPS или выберите вручную." },
-  { icon: "chat", title: "Продажа", text: "Форма на сайте, WhatsApp или Telegram. После проверки — публикация." },
-];
-
 function escHtml(s) {
   if (s == null) return "";
   const d = document.createElement("div");
@@ -84,56 +68,13 @@ function fitsChipsHTML(fits) {
   if (!fits?.length) return "";
   return `<div class="fits-block"><span class="fits-block__label">Подходит для</span><div class="fits-chips">${fits
     .map((f) => `<span class="fits-chip">${escHtml(f)}</span>`)
-    .join("")}</div></div>`.replace(/<\/?motion[^>]*>/g, "");
+    .join("")}</div></div>`;
 }
 
 function phoneLink(phone) {
   if (!phone) return "";
   const tel = phone.replace(/\s/g, "");
   return `<a href="tel:${escHtml(tel)}" class="detail-contact">${escHtml(phone)}</a>`;
-}
-
-let guideStep = 0;
-
-function initGuide() {
-  const overlay = document.getElementById("guide-overlay");
-  const guideKey = typeof STORAGE_GUIDE !== "undefined" ? STORAGE_GUIDE : "ftservice_guide_seen";
-  if (!overlay || localStorage.getItem(guideKey) || localStorage.getItem("bazardrom_guide_seen")) return;
-
-  const title = overlay.querySelector(".guide-title");
-  const text = overlay.querySelector(".guide-text");
-  const dots = overlay.querySelector(".guide-dots");
-  const iconBox = overlay.querySelector(".guide-box__icon");
-
-  function render() {
-    const s = GUIDE_STEPS[guideStep];
-    title.textContent = s.title;
-    text.textContent = s.text;
-    if (iconBox) iconBox.innerHTML = icon(s.icon, "icon icon--xl");
-    dots.innerHTML = GUIDE_STEPS.map((_, i) =>
-      `<span class="${i === guideStep ? "active" : ""}"></span>`
-    ).join("");
-  }
-
-  overlay.querySelector(".guide-next")?.addEventListener("click", () => {
-    if (guideStep < GUIDE_STEPS.length - 1) {
-      guideStep++;
-      render();
-    } else {
-      localStorage.setItem(guideKey, "1");
-      overlay.classList.remove("open");
-    }
-  });
-
-  overlay.querySelector(".guide-skip")?.addEventListener("click", () => {
-    localStorage.setItem(guideKey, "1");
-    overlay.classList.remove("open");
-  });
-
-  setTimeout(() => {
-    overlay.classList.add("open");
-    render();
-  }, 800);
 }
 
 async function initSubmitListingModal() {
@@ -151,7 +92,7 @@ async function initSubmitListingModal() {
   modal.innerHTML = `
     <button type="button" class="modal__close">закрыть</button>
     <h2>Подать объявление</h2>
-    <p class="submit-modal__lead">Заявка попадёт в очередь модерации.</p>
+    <p class="submit-modal__lead">Проверим и выложим в каталог.</p>
     <div id="submit-form-wrap">
       <form id="listing-submit-form" class="submit-form">
         <div class="form-row"><label>Ваше имя</label><input name="contact_name" required minlength="2"></div>
@@ -225,7 +166,6 @@ function listingCardHTML(p) {
   return `<a href="parts.html?id=${p.id}" class="listing-card">
     <div class="listing-card__img">
       ${categoryIcon(p.category, "icon icon--xl icon--muted")}
-      <span class="listing-card__img-camera">${icon("camera", "icon icon--sm")} фото</span>
       <span class="listing-card__badge badge--${p.condition}">${cond}</span>
       ${verified}
     </div>
@@ -235,9 +175,8 @@ function listingCardHTML(p) {
       <div class="listing-card__meta">${icon("part", "icon icon--sm")} ${escHtml(p.car)} · ${icon("pin", "icon icon--sm")} ${escHtml(p.location)}</div>
       <div class="listing-card__seller">${escHtml(p.seller)}</div>
       <div class="listing-card__price">${formatPrice(p.price)}</div>
-      <div class="listing-card__return">${icon("return", "icon icon--sm")} Возврат 3 дня</div>
     </div>
-  </a>`.replace(/<\/?motion[^>]*>/g, "");
+  </a>`;
 }
 
 function partDetailHTML(p) {
@@ -270,7 +209,7 @@ function partDetailHTML(p) {
         <a href="parts.html" class="btn btn--outline">← К каталогу</a>
       </div>
     </article>
-  `.replace(/<\/?motion[^>]*>/g, "");
+  `;
 }
 
 function masterCardHTML(m) {
@@ -298,7 +237,7 @@ function masterCardHTML(m) {
         <span class="master-card__from">от ${formatPrice(m.priceFrom)}</span>
       </div>
     </div>
-  </div>`.replace(/<\/?motion[^>]*>/g, "");
+  </div>`;
 }
 
 function renderListings(container, items) {
@@ -514,7 +453,7 @@ function initBookingForm() {
     const ok = document.getElementById("booking-success");
     try {
       if (!(await checkApi())) {
-        alert("Запустите API на порту 8000.");
+        alert("Сервис временно недоступен. Попробуйте позже.");
         return;
       }
       if (!getToken()) {
@@ -590,12 +529,18 @@ async function initHomeData() {
   const masters = (await loadMasters()) || MASTERS;
   if (partsEl) renderListings(partsEl, parts.slice(0, 4));
   if (mastersEl) renderMasters(mastersEl, masters.slice(0, 3));
+
+  const stats = document.querySelector(".hero__stats");
+  if (stats) {
+    const nums = stats.querySelectorAll("strong");
+    if (nums[0]) nums[0].textContent = String(masters.length);
+    if (nums[2] && parts.length) nums[2].textContent = parts.length >= 100 ? "100+" : String(parts.length);
+  }
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
   initModals();
   await initMessengers();
-  initGuide();
   initSearch();
   await initFilters();
   await initMastersPage();

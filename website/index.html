@@ -30,9 +30,9 @@
   <section class="hero">
     <div class="container hero__grid">
       <div>
-        <span class="hero__badge">Бишкек, рынок Кудайберген</span>
-        <h1>Б/у запчасти и автоэлектрики</h1>
-        <p class="hero__desc">Объявления с ценой в сомах. Без «договорной». Продавцов и мастеров проверяем до публикации.</p>
+        <span class="hero__badge">Бишкек · рынок Кудайберген</span>
+        <h1>Запчасти б/у и автоэлектрики</h1>
+        <p class="hero__desc">Цены в сомах, без «договорной». Перед публикацией сверяем продавца и наличие детали.</p>
         <form class="search-box search-form hero-search">
           <select name="type"><option value="parts">Запчасти</option><option value="masters">Мастера</option></select>
           <input type="search" name="q" placeholder="Марка, деталь, район…">
@@ -40,9 +40,9 @@
           <button type="submit" class="btn btn--primary">Искать</button>
         </form>
         <div class="hero__stats">
-          <div class="hero__stat"><strong>110</strong><span>мастеров в базе</span></div>
-          <div class="hero__stat"><strong>3 дн.</strong><span>возврат детали</span></div>
-          <div class="hero__stat"><strong>500+</strong><span>объявлений</span></div>
+          <div class="hero__stat"><strong>—</strong><span>мастеров</span></div>
+          <div class="hero__stat"><strong>3 дн.</strong><span>на возврат</span></div>
+          <div class="hero__stat"><strong>—</strong><span>объявлений</span></div>
         </div>
       </div>
       <div id="hero-illus"></div>
@@ -64,8 +64,8 @@
       <div class="diagnostic-banner">
         <div id="diagnostic-icon" class="diagnostic-banner__icon"></div>
         <div>
-          <h3 style="font-size:16px;font-weight:700;">Не знаете, к кому обратиться</h3>
-          <p style="font-size:13px;color:var(--gray-700);margin-top:4px;">Менеджер сделает диагностику и подскажет мастера</p>
+          <h3 class="diagnostic-banner__title">Не знаете, к кому ехать</h3>
+          <p class="diagnostic-banner__text">Менеджер посмотрит машину и подскажет мастера</p>
         </div>
         <div class="diagnostic-banner__prices">
           <span class="price-chip">простая <strong>500 сом</strong></span>
@@ -81,7 +81,7 @@
       <div class="section__header">
         <div>
           <h2 class="section__title">Последние объявления</h2>
-          <p class="section__subtitle">Цена указана в объявлении</p>
+          <p class="section__subtitle">Свежие объявления с рынка</p>
         </div>
         <a href="parts.html" class="link-more">Ещё запчасти</a>
       </div>
@@ -95,20 +95,20 @@
         <div><h2 class="section__title">Автоэлектрики</h2><p class="section__subtitle">Опыт от 1 года, запись по времени</p></div>
         <a href="masters.html" class="link-more">Все мастера</a>
       </div>
-      <div style="display:flex;flex-direction:column;gap:10px;" id="featured-masters"></div>
+      <div class="stack-list" id="featured-masters"></div>
     </div>
   </section>
 
   <section class="section section--white">
     <div class="container">
-      <h2 class="section__title" style="margin-bottom:16px;">Условия площадки</h2>
+      <h2 class="section__title section__title--mb">Как у нас устроено</h2>
       <ul class="info-list" id="info-list">
-        <li><strong>Цена в сомах</strong> — без «договорной», как на карточке</li>
-        <li><strong>Проверка продавца</strong> — паспорт, телефон, наличие детали</li>
-        <li><strong>Возврат 3 дня</strong> — по договорённости с продавцом, как на рынке</li>
-        <li><strong>Объявления</strong> — форма, WhatsApp или Telegram, публикует менеджер</li>
-        <li><strong>Мастера</strong> — в основном автоэлектрики, анкета перед добавлением</li>
-        <li><strong>Доставка</strong> — продавец сам, Яндекс или Филота</li>
+        <li><strong>Цена в сомах</strong> — видна сразу на карточке</li>
+        <li><strong>Продавец</strong> — проверяем документы и что деталь на руках</li>
+        <li><strong>Возврат</strong> — три дня, как принято на рынке</li>
+        <li><strong>Размещение</strong> — через форму или мессенджер, выкладывает менеджер</li>
+        <li><strong>Мастера</strong> — автоэлектрики, перед добавлением заполняют анкету</li>
+        <li><strong>Доставка</strong> — сами, через Яндекс или Филота</li>
       </ul>
     </div>
   </section>
@@ -117,8 +117,8 @@
     <div class="container">
       <div class="cta-banner">
         <div>
-          <h2 style="font-size:18px;">Продать запчасть</h2>
-          <p style="font-size:13px;color:var(--gray-700);margin-top:4px;">Напишите менеджеру: название, цена, фото, район</p>
+          <h2 class="cta-banner__title">Продать запчасть</h2>
+          <p class="cta-banner__text">Напишите менеджеру — что продаёте, за сколько и где лежит</p>
         </div>
         <div class="messenger-row">
           <a class="btn btn--wa btn--lg" data-whatsapp>WhatsApp</a>
@@ -132,11 +132,11 @@
     <div class="container">
       <div class="footer__grid">
         <div>
-          <a href="index.html" class="logo" style="margin-bottom:12px;">
+          <a href="index.html" class="logo footer__logo">
             <div class="logo__mark">FT</div>
-            <div class="logo__text" style="color:#fff;">FT<span>service</span></div>
+            <div class="logo__text logo__text--light">FT<span>service</span></div>
           </a>
-          <p style="font-size:13px;">Запчасти и мастера, Бишкек</p>
+          <p class="footer__tagline">Запчасти и мастера, Бишкек</p>
         </div>
         <div><h4>Каталог</h4><a href="parts.html">Запчасти</a><a href="masters.html">Мастера</a></div>
         <div><h4>Покупателям</h4><a href="cabinet.html">Кабинет</a><a href="help.html">Помощь</a></div>
@@ -150,21 +150,8 @@
     <div class="modal">
       <button type="button" class="modal__close">закрыть</button>
       <h2>Подать объявление</h2>
-      <p>Самостоятельно на сайте не размещаем. Напишите менеджеру в WhatsApp: что продаёте, цена, состояние, фото, район. После проверки выложим.</p>
-      <a class="btn btn--wa btn--lg" style="width:100%;margin-top:16px;" data-whatsapp>WhatsApp менеджеру</a>
-    </div>
-  </div>
-
-  <div class="guide-overlay" id="guide-overlay">
-    <div class="guide-box">
-      <div class="guide-box__icon"></div>
-      <div class="guide-dots"></div>
-      <h3 class="guide-title"></h3>
-      <p class="guide-text"></p>
-      <div style="display:flex;gap:10px;">
-        <button type="button" class="btn btn--primary guide-next">Дальше</button>
-        <button type="button" class="btn btn--outline guide-skip">Не показывать</button>
-      </div>
+      <p>Напишите менеджеру — что продаёте, цена, фото. После проверки выложим.</p>
+      <a class="btn btn--wa btn--lg btn--block" data-whatsapp>WhatsApp</a>
     </div>
   </div>
 

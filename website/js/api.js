@@ -1,8 +1,6 @@
-/** API-клиент FTservice */
 const API_BASE = "http://213.155.9.130/api";
 const STORAGE_TOKEN = "ftservice_token";
 const STORAGE_USER = "ftservice_user";
-const STORAGE_GUIDE = "ftservice_guide_seen";
 
 function getToken() {
   return localStorage.getItem(STORAGE_TOKEN) || localStorage.getItem("bazardrom_token");

@@ -30,10 +30,10 @@
 
   <div class="container">
     <div class="breadcrumb"><a href="index.html">Главная</a> / Мастера</div>
-    <div class="section__header" style="padding:24px 0 16px;">
+    <div class="section__header section__header--page">
       <div>
-        <h1 class="section__title">Автоэлектрики Бишкека</h1>
-        <p class="section__subtitle">Проверенные мастера · запись по времени</p>
+        <h1 class="section__title">Автоэлектрики</h1>
+        <p class="section__subtitle">Бишкек · запись на конкретное время</p>
       </div>
       <div class="masters-toolbar">
         <button type="button" class="btn btn--primary" id="btn-nearby-masters">Ближайшие по GPS</button>
@@ -41,16 +41,15 @@
       </div>
     </div>
     <p class="masters-gps-status" id="masters-gps-status"></p>
-    <div class="alert alert--info">Каждый мастер прошёл анкету. Только автоэлектрики.</div>
-    <div style="display:flex;flex-direction:column;gap:12px;padding-bottom:48px;" id="masters-list"></div>
+    <div class="stack-list stack-list--padded" id="masters-list"></div>
   </div>
 
-  <footer class="footer">
+  <footer class="footer footer--simple">
     <div class="container">
-      <div class="footer__bottom" style="border:none;padding:0;">
+      <div class="footer__bottom">
         <span>© 2026 FTservice</span>
-        <a data-whatsapp style="color:#e85d04;">WhatsApp</a>
-        <a data-telegram style="color:#e85d04;">Telegram</a>
+        <a data-whatsapp class="footer__contact">WhatsApp</a>
+        <a data-telegram class="footer__contact">Telegram</a>
       </div>
     </div>
   </footer>

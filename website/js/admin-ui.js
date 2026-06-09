@@ -1,5 +1,3 @@
-/** Панель модерации для admin / moderator */
-
 const CATEGORY_LABELS = {
   engine: "Двигатель",
   electrical: "Электрика",

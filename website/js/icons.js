@@ -1,4 +1,3 @@
-/** SVG-иконки Bazardrom (нарисованы под стиль сайта) */
 function icon(name, className = "icon") {
   const svg = ICONS[name];
   if (!svg) return "";

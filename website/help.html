@@ -28,42 +28,42 @@
     </div>
   </header>
 
-  <section class="section section--white" style="padding-top:32px;">
+  <section class="section section--white section--tight-top">
     <div class="container">
       <h1 class="section__title">Помощь</h1>
-      <p class="section__subtitle" style="margin-bottom:24px;">Покупателям, продавцам и мастерам</p>
-      <div class="help-sections" style="margin-bottom:32px;">
-        <a href="#buyers" class="help-section-card" style="text-decoration:none;color:inherit;">
+      <p class="section__subtitle section__subtitle--mb">Ответы на частые вопросы</p>
+      <div class="help-sections help-sections--mb">
+        <a href="#buyers" class="help-section-card help-section-card--link">
           <div class="help-section-card__icon"></div>
           <h3>Покупателям</h3>
         </a>
-        <a href="#sellers" class="help-section-card" style="text-decoration:none;color:inherit;">
+        <a href="#sellers" class="help-section-card help-section-card--link">
           <div class="help-section-card__icon"></div>
           <h3>Продавцам</h3>
         </a>
-        <a href="#masters" class="help-section-card" style="text-decoration:none;color:inherit;">
+        <a href="#masters" class="help-section-card help-section-card--link">
           <div class="help-section-card__icon"></div>
           <h3>Мастерам</h3>
         </a>
       </div>
       <h2 id="buyers">Покупателям</h2>
-      <details class="faq-item" open><summary>Нет «договорной»</summary><p>Только фиксированные цены в сомах.</p></details>
-      <details class="faq-item" id="return"><summary>Возврат 3 дня</summary><p>Традиция рынка — вернуть за 3 дня.</p></details>
-      <h2 id="sellers" style="margin-top:24px;">Продавцам</h2>
-      <details class="faq-item"><summary>Размещение</summary><p>Напишите в WhatsApp, менеджер опубликует после проверки.</p></details>
-      <h2 id="masters" style="margin-top:24px;">Мастерам</h2>
-      <details class="faq-item"><summary>В каталог</summary><p>Анкета, опыт от 1 года.</p></details>
-      <div style="margin-top:32px;padding:20px 24px;background:var(--orange-light);border-radius:12px;border:1px solid rgba(232,100,10,.15);">
+      <details class="faq-item" open><summary>Цены</summary><p>На сайте только сумма в сомах — как на витрине, без «договорной» в переписке.</p></details>
+      <details class="faq-item" id="return"><summary>Возврат</summary><p>Три дня, если договорились с продавцом. Так же, как на рынке.</p></details>
+      <h2 id="sellers" class="help-block-title">Продавцам</h2>
+      <details class="faq-item"><summary>Как выложить объявление</summary><p>Форма на сайте или сообщение в WhatsApp. Менеджер проверит и опубликует.</p></details>
+      <h2 id="masters" class="help-block-title">Мастерам</h2>
+      <details class="faq-item"><summary>Попасть в каталог</summary><p>Заполните анкету, нужен опыт от года. Модератор свяжется.</p></details>
+      <div class="help-support">
         <a class="btn btn--wa" data-whatsapp>Написать в поддержку</a>
       </div>
     </div>
   </section>
 
-  <footer class="footer">
+  <footer class="footer footer--simple">
     <div class="container">
-      <div class="footer__bottom" style="border:none;padding:0;">
+      <div class="footer__bottom">
         <span>© 2026 FTservice</span>
-        <a data-whatsapp style="color:#e85d04;">WhatsApp</a>
+        <a data-whatsapp class="footer__contact">WhatsApp</a>
       </div>
     </div>
   </footer>
@@ -71,9 +71,9 @@
   <div class="modal-overlay" id="add-modal">
     <div class="modal">
       <button type="button" class="modal__close">закрыть</button>
-      <h2>Разместить объявление</h2>
-      <p>Отправьте в WhatsApp — менеджер опубликует после модерации.</p>
-      <a class="btn btn--wa btn--lg" style="width:100%;margin-top:16px;" data-whatsapp>WhatsApp</a>
+      <h2>Подать объявление</h2>
+      <p>Напишите менеджеру — что продаёте, цена, фото. После проверки выложим.</p>
+      <a class="btn btn--wa btn--lg btn--block" data-whatsapp>WhatsApp</a>
     </div>
   </div>
 
