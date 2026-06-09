@@ -56,6 +56,7 @@ class PartAdminOut(BaseModel):
 
 class MasterAdminOut(BaseModel):
     id: int
+    user_id: int | None = None
     name: str
     spec: str
     experience: str
@@ -93,3 +94,4 @@ class MasterAdminUpdate(BaseModel):
     is_verified: bool | None = None
     is_active: bool | None = None
     bio: str | None = None
+    user_id: int | None = None

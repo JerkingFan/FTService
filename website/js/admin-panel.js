@@ -289,6 +289,7 @@ function showMasterForm(el, master) {
         <div class="form-row"><label>Специализация</label><input name="spec" value="${escAttr(master?.spec || "Автоэлектрик")}"></div>
         <div class="form-row"><label>Опыт</label><input name="experience" value="${escAttr(master?.experience || "")}" required></div>
         <div class="form-row"><label>Район</label><input name="district" value="${escAttr(master?.district || "")}" required></div>
+        <div class="form-row"><label>ID пользователя (аккаунт)</label><input name="user_id" type="number" min="1" placeholder="из раздела Пользователи" value="${master?.user_id ?? ""}"></div>
         <div class="form-row"><label>Рейтинг</label><input name="rating" type="number" step="0.1" min="0" max="5" value="${master?.rating ?? 5}"></div>
         <div class="form-row"><label>Работ</label><input name="jobs_count" type="number" min="0" value="${master?.jobs_count ?? 0}"></div>
         <div class="form-row"><label>Цена от (сом)</label><input name="price_from" type="number" min="1" value="${master?.price_from ?? 500}"></div>
@@ -317,6 +318,8 @@ function showMasterForm(el, master) {
       is_verified: fd.get("is_verified") === "on",
       is_active: fd.get("is_active") === "on",
     };
+    const userIdRaw = fd.get("user_id");
+    if (!isNew && userIdRaw) payload.user_id = parseInt(userIdRaw, 10);
     try {
       if (isNew) await api.createAdminMaster(payload);
       else await api.updateAdminMaster(master.id, payload);

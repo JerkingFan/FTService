@@ -22,12 +22,12 @@ router = APIRouter(prefix="/bookings", tags=["bookings"])
 
 
 def _get_user_master(db: Session, user: User) -> Master:
-    if user.role != UserRole.master:
-        raise HTTPException(status_code=403, detail="Только для мастеров")
     master = db.scalar(select(Master).where(Master.user_id == user.id))
-    if not master:
+    if master:
+        return master
+    if user.role == UserRole.master:
         raise HTTPException(status_code=404, detail="Профиль мастера не привязан к аккаунту")
-    return master
+    raise HTTPException(status_code=403, detail="Только для мастеров")
 
 
 def _master_booking_out(booking: Booking, buyer: User | None) -> MasterBookingOut:

@@ -286,7 +286,17 @@ def update_master(
     master = db.get(Master, master_id)
     if not master:
         raise HTTPException(status_code=404, detail="Мастер не найден")
-    for k, v in data.model_dump(exclude_unset=True).items():
+    payload = data.model_dump(exclude_unset=True)
+    if "user_id" in payload and payload["user_id"] is not None:
+        uid = payload["user_id"]
+        linked = db.scalar(select(Master).where(Master.user_id == uid, Master.id != master_id))
+        if linked:
+            raise HTTPException(status_code=400, detail="Этот пользователь уже привязан к другому мастеру")
+        user = db.get(User, uid)
+        if not user:
+            raise HTTPException(status_code=404, detail="Пользователь не найден")
+        user.role = UserRole.master
+    for k, v in payload.items():
         setattr(master, k, v)
     db.commit()
     db.refresh(master)

@@ -15,6 +15,36 @@ function logout() {
   window.location.href = "index.html";
 }
 
+function isMasterAccount(user) {
+  return !!(user && (user.role === "master" || user.master_id != null));
+}
+
+async function detectMasterAccount() {
+  const user = getCurrentUser();
+  if (isMasterAccount(user)) return true;
+  if (!getToken() || !(await checkApi())) return false;
+  try {
+    await api.getMasterSummary();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function setCabinetPageMode(isMaster) {
+  document.body.classList.toggle("page--master-cabinet", isMaster);
+  document.body.classList.toggle("page--buyer-cabinet", !isMaster);
+  const crumb = document.getElementById("cabinet-breadcrumb");
+  if (crumb) {
+    crumb.innerHTML = isMaster
+      ? '<a href="index.html">Главная</a> / <strong>Кабинет мастера</strong>'
+      : '<a href="index.html">Главная</a> / Личный кабинет';
+  }
+  if (isMaster) {
+    document.title = "Кабинет мастера — FTservice";
+  }
+}
+
 function renderAuthHeader() {
   const el = document.querySelector(".header__actions");
   if (!el) return;
@@ -31,7 +61,7 @@ function renderAuthHeader() {
     } else if (user.role === "moderator") {
       modLink = '<a href="admin.html" class="btn btn--primary btn--sm">Модерация</a>';
     }
-    const cabinetLabel = user.role === "master" ? "Мои записи" : escapeHtml(user.full_name);
+    const cabinetLabel = isMasterAccount(user) ? "Кабинет мастера" : escapeHtml(user.full_name);
     el.innerHTML = `
       <a href="cabinet.html" class="header-user" title="${escapeHtml(user.email)}">
         <span class="header-user__avatar">${initials}</span>
@@ -60,7 +90,7 @@ async function refreshSession() {
   try {
     const user = await api.me();
     setAuth(getToken(), user);
-    if (user.role === "master") {
+    if (isMasterAccount(user)) {
       await pollMasterNotifications(false);
       startMasterPolling();
     }
@@ -196,8 +226,12 @@ function markMasterBookingsSeen(bookings, summary) {
 }
 
 async function pollMasterNotifications(showToast) {
+  if (!getToken()) return null;
   const user = getCurrentUser();
-  if (!user || user.role !== "master" || !getToken()) return null;
+  if (!isMasterAccount(user)) {
+    const ok = await detectMasterAccount();
+    if (!ok) return null;
+  }
   if (!(await checkApi())) return null;
   try {
     const summary = await api.getMasterSummary();
@@ -212,10 +246,10 @@ async function pollMasterNotifications(showToast) {
   }
 }
 
-function startMasterPolling() {
+async function startMasterPolling() {
   if (masterPollTimer) return;
-  const user = getCurrentUser();
-  if (!user || user.role !== "master" || !getToken()) return;
+  if (!getToken()) return;
+  if (!(await detectMasterAccount())) return;
   pollMasterNotifications(true);
   masterPollTimer = setInterval(() => pollMasterNotifications(true), 30000);
 }
@@ -384,19 +418,26 @@ function renderMasterCabinetDOM(root, data, summary) {
       : filtered.map(masterBookingCardHTML).join("");
 
   root.innerHTML = `
-    <div class="cabinet-layout cabinet-layout--master">
-      <nav class="cabinet-nav">
-        <a href="#incoming" class="active">Записи ко мне ${pendingBadge}</a>
-      </nav>
-      <div>
-        <div class="cabinet-panel" id="incoming">
-          <h2>${escapeHtml(profile.name)} · ${escapeHtml(profile.district)}</h2>
-          ${profileNote}
-          ${pendingAlert}
-          <div id="master-calendar-wrap">${renderMasterCalendar(data.bookings, masterCalState)}</div>
-          <h3 class="master-list-title">${listTitle}</h3>
-          <div id="master-bookings-list">${bookingsHtml}</div>
+    <div class="master-cabinet">
+      <header class="master-cabinet__hero">
+        <div class="master-cabinet__hero-top">
+          <span class="master-cabinet__tag">Кабинет мастера</span>
+          ${data.pending_count > 0 ? `<span class="master-cabinet__pending">${data.pending_count} новых</span>` : ""}
         </div>
+        <h1 class="master-cabinet__title">Записи клиентов</h1>
+        <p class="master-cabinet__sub">${escapeHtml(profile.name)} · ${escapeHtml(profile.district)}</p>
+        ${profileNote}
+        ${pendingAlert}
+      </header>
+      <div class="master-cabinet__grid">
+        <aside class="master-cabinet__aside">
+          <h2 class="master-cabinet__section-title">Календарь ${pendingBadge}</h2>
+          <div id="master-calendar-wrap">${renderMasterCalendar(data.bookings, masterCalState)}</div>
+        </aside>
+        <section class="master-cabinet__main">
+          <h2 class="master-cabinet__section-title">${listTitle}</h2>
+          <div id="master-bookings-list" class="master-cabinet__bookings">${bookingsHtml}</div>
+        </section>
       </div>
     </div>
   `;
@@ -413,13 +454,22 @@ async function loadMasterCabinetPage() {
   const root = document.getElementById("cabinet-root");
   if (!root) return;
 
-  root.innerHTML = '<p class="loading-hint">Загрузка…</p>';
+  setCabinetPageMode(true);
+  root.innerHTML = '<p class="loading-hint">Загрузка кабинета мастера…</p>';
 
   try {
     const [data, summary] = await Promise.all([api.getMasterCabinet(), api.getMasterSummary()]);
     renderMasterCabinetDOM(root, data, summary);
   } catch (e) {
-    root.innerHTML = `<div class="alert alert--info">${escapeHtml(e.message)}</div>`;
+    root.innerHTML = `
+      <div class="master-cabinet master-cabinet--error">
+        <header class="master-cabinet__hero">
+          <span class="master-cabinet__tag">Кабинет мастера</span>
+          <h1 class="master-cabinet__title">Профиль не подключён</h1>
+        </header>
+        <div class="alert alert--info">${escapeHtml(e.message)}</div>
+        <p class="section__subtitle">Напишите менеджеру — привяжут аккаунт к профилю в каталоге.</p>
+      </div>`;
   }
 }
 
@@ -429,12 +479,12 @@ async function loadCabinetPage() {
 
   if (!(await requireAuth())) return;
 
-  const user = getCurrentUser();
-  if (user?.role === "master") {
+  if (await detectMasterAccount()) {
     await loadMasterCabinetPage();
     return;
   }
 
+  setCabinetPageMode(false);
   root.innerHTML = '<p class="loading-hint">Загрузка…</p>';
 
   try {
@@ -477,20 +527,26 @@ async function loadCabinetPage() {
             .join("");
 
     root.innerHTML = `
-      <div class="cabinet-layout">
-        <nav class="cabinet-nav">
-          <a href="#bookings" class="active">Записи</a>
-          <a href="#history">История</a>
-          <a href="booking.html">Новая запись</a>
-        </nav>
-        <div>
-          <div class="cabinet-panel" id="bookings">
-            <h2>Мои записи</h2>
-            ${bookingsHtml}
-          </div>
-          <div class="cabinet-panel" id="history" style="margin-top:20px;">
-            <h2>История ремонтов</h2>
-            ${repairsHtml}
+      <div class="buyer-cabinet">
+        <header class="buyer-cabinet__head">
+          <span class="buyer-cabinet__tag">Покупатель</span>
+          <h1 class="buyer-cabinet__title">Личный кабинет</h1>
+        </header>
+        <div class="cabinet-layout">
+          <nav class="cabinet-nav">
+            <a href="#bookings" class="active">Мои записи</a>
+            <a href="#history">История</a>
+            <a href="booking.html">Записаться</a>
+          </nav>
+          <div>
+            <div class="cabinet-panel" id="bookings">
+              <h2>Записи к мастерам</h2>
+              ${bookingsHtml}
+            </div>
+            <div class="cabinet-panel buyer-cabinet__history" id="history">
+              <h2>История ремонтов</h2>
+              ${repairsHtml}
+            </div>
           </div>
         </div>
       </div>
@@ -640,7 +696,7 @@ async function initBookingAuth() {
   const user = getCurrentUser();
   if (user && getToken()) {
     if (notice) notice.style.display = "none";
-    if (masterNotice) masterNotice.style.display = user.role === "master" ? "block" : "none";
+    if (masterNotice) masterNotice.style.display = isMasterAccount(user) ? "block" : "none";
     const phone = form.querySelector('[name="phone"]');
     if (phone && user.phone && !phone.value) phone.value = user.phone;
     return true;
@@ -658,5 +714,5 @@ document.addEventListener("DOMContentLoaded", async () => {
   initRegisterPage();
   loadCabinetPage();
   initBookingAuth();
-  startMasterPolling();
+  await startMasterPolling();
 });
