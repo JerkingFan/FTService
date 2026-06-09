@@ -1139,7 +1139,20 @@ img { max-width: 100%; display: block; }
 .buyer-cabinet__title {
   font-size: 24px;
   font-weight: 800;
+  margin: 0 0 8px;
+}
+
+.buyer-cabinet__lead {
+  font-size: 14px;
+  color: var(--gray-600);
+  margin: 0 0 6px;
+  max-width: 520px;
+}
+
+.buyer-cabinet__master-link {
+  font-size: 13px;
   margin: 0;
+  color: var(--gray-500);
 }
 
 .buyer-cabinet__history {

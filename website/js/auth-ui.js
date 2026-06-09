@@ -24,10 +24,26 @@ async function detectMasterAccount() {
   if (isMasterAccount(user)) return true;
   if (!getToken() || !(await checkApi())) return false;
   try {
-    await api.getMasterSummary();
+    await api.getMasterCabinet();
     return true;
   } catch {
     return false;
+  }
+}
+
+function masterCabinetUrl() {
+  return "master.html";
+}
+
+function buyerCabinetUrl() {
+  return "cabinet.html";
+}
+
+async function redirectAfterLogin() {
+  if (await detectMasterAccount()) {
+    location.href = masterCabinetUrl();
+  } else {
+    location.href = buyerCabinetUrl();
   }
 }
 
@@ -61,9 +77,11 @@ function renderAuthHeader() {
     } else if (user.role === "moderator") {
       modLink = '<a href="admin.html" class="btn btn--primary btn--sm">Модерация</a>';
     }
-    const cabinetLabel = isMasterAccount(user) ? "Кабинет мастера" : escapeHtml(user.full_name);
+    const isMaster = isMasterAccount(user);
+    const cabinetHref = isMaster ? masterCabinetUrl() : buyerCabinetUrl();
+    const cabinetLabel = isMaster ? "Кабинет мастера" : escapeHtml(user.full_name);
     el.innerHTML = `
-      <a href="cabinet.html" class="header-user" title="${escapeHtml(user.email)}">
+      <a href="${cabinetHref}" class="header-user" title="${escapeHtml(user.email)}">
         <span class="header-user__avatar">${initials}</span>
         <span class="header-user__name">${cabinetLabel}</span>
       </a>
@@ -454,6 +472,8 @@ async function loadMasterCabinetPage() {
   const root = document.getElementById("cabinet-root");
   if (!root) return;
 
+  if (!(await requireAuth())) return;
+
   setCabinetPageMode(true);
   root.innerHTML = '<p class="loading-hint">Загрузка кабинета мастера…</p>';
 
@@ -473,14 +493,14 @@ async function loadMasterCabinetPage() {
   }
 }
 
-async function loadCabinetPage() {
+async function loadBuyerCabinetPage() {
   const root = document.getElementById("cabinet-root");
   if (!root) return;
 
   if (!(await requireAuth())) return;
 
   if (await detectMasterAccount()) {
-    await loadMasterCabinetPage();
+    location.href = masterCabinetUrl();
     return;
   }
 
@@ -529,8 +549,10 @@ async function loadCabinetPage() {
     root.innerHTML = `
       <div class="buyer-cabinet">
         <header class="buyer-cabinet__head">
-          <span class="buyer-cabinet__tag">Покупатель</span>
-          <h1 class="buyer-cabinet__title">Личный кабинет</h1>
+          <span class="buyer-cabinet__tag">Кабинет покупателя</span>
+          <h1 class="buyer-cabinet__title">Мои записи и история</h1>
+          <p class="buyer-cabinet__lead">Здесь — куда <strong>вы</strong> записались к мастерам. Это не панель мастера.</p>
+          <p class="buyer-cabinet__master-link">Вы мастер? Откройте <a href="master.html">кабинет мастера</a> (нужен аккаунт с привязанным профилем).</p>
         </header>
         <div class="cabinet-layout">
           <nav class="cabinet-nav">
@@ -561,12 +583,13 @@ function initLoginPage() {
   if (!form) return;
 
   const params = new URLSearchParams(location.search);
-  const next = params.get("next") || "cabinet.html";
+  const next = params.get("next");
   const errEl = document.getElementById("auth-error");
 
   if (getToken()) {
     refreshSession().then(() => {
-      location.href = next;
+      if (next) location.href = next;
+      else redirectAfterLogin();
     });
     return;
   }
@@ -582,7 +605,8 @@ function initLoginPage() {
       if (!(await checkApi())) throw new Error("Сервис временно недоступен");
       await api.login(fd.get("email"), fd.get("password"));
       renderAuthHeader();
-      location.href = next;
+      if (next) location.href = next;
+      else await redirectAfterLogin();
     } catch (err) {
       if (errEl) {
         errEl.textContent = err.message;
@@ -613,7 +637,7 @@ function initRegisterPage() {
   initRegisterRoleFields();
 
   if (getToken()) {
-    location.href = "cabinet.html";
+    redirectAfterLogin();
     return;
   }
 
@@ -645,7 +669,8 @@ function initRegisterPage() {
       });
       renderAuthHeader();
       if (data.message) alert(data.message);
-      location.href = "cabinet.html";
+      if (fd.get("role") === "master") location.href = masterCabinetUrl();
+      else await redirectAfterLogin();
     } catch (err) {
       if (errEl) {
         errEl.textContent = err.message;
@@ -712,7 +737,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   renderAuthHeader();
   initLoginPage();
   initRegisterPage();
-  loadCabinetPage();
+  if (document.getElementById("cabinet-root")) {
+    if (location.pathname.endsWith("master.html")) {
+      await loadMasterCabinetPage();
+    } else {
+      await loadBuyerCabinetPage();
+    }
+  }
   initBookingAuth();
   await startMasterPolling();
 });
