@@ -80,9 +80,7 @@ function renderAuthHeader() {
     const isMaster = isMasterAccount(user);
     const cabinetHref = isMaster ? masterCabinetUrl() : buyerCabinetUrl();
     const cabinetLabel = isMaster ? "Кабинет мастера" : escapeHtml(user.full_name);
-    const messagesLink = isMaster
-      ? ""
-      : '<a href="messages.html" class="btn btn--outline btn--sm">Сообщения</a>';
+    const messagesLink = '<a href="messages.html" class="btn btn--outline btn--sm">Сообщения</a>';
     el.innerHTML = `
       <a href="${cabinetHref}" class="header-user" title="${escapeHtml(user.email)}">
         <span class="header-user__avatar">${initials}</span>
