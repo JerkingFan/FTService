@@ -119,6 +119,26 @@ def test_master_cabinet_requires_master(buyer_token, master_token):
     assert "pending_count" in data
 
 
+def test_master_cannot_book_self(buyer_token, master_token):
+    masters = client.get("/api/masters", params={"limit": 50}).json()["items"]
+    me = client.get("/api/auth/me", headers=auth(master_token)).json()
+    own_id = me.get("master_id")
+    if not own_id:
+        pytest.skip("master profile not linked")
+    r = client.post(
+        "/api/bookings",
+        headers=auth(master_token),
+        json={
+            "master_id": own_id,
+            "service": "diagnostic",
+            "booking_date": "2026-12-01",
+            "booking_time": "10:00:00",
+            "phone": "+996555000000",
+        },
+    )
+    assert r.status_code == 400
+
+
 def test_master_updates_booking_status(master_token):
     r = client.get("/api/bookings/master", headers=auth(master_token))
     pending = [b for b in r.json()["bookings"] if b["status"] == "pending"]

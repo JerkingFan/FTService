@@ -6,6 +6,7 @@ from app.auth import create_access_token, get_current_user, hash_password, verif
 from app.database import get_db
 from app.models import Master, User, UserRole
 from app.schemas.auth import Token, UserLogin, UserOut, UserRegisterPublic
+from app.user_out import build_user_out
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -46,7 +47,7 @@ def register(data: UserRegisterPublic, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(user)
     token = create_access_token(user.id, user.role.value)
-    return Token(access_token=token, user=UserOut.model_validate(user), message=message)
+    return Token(access_token=token, user=build_user_out(db, user), message=message)
 
 
 @router.post("/login", response_model=Token)
@@ -61,12 +62,12 @@ def login(data: UserLogin, db: Session = Depends(get_db)):
     if not user.is_active:
         raise HTTPException(status_code=403, detail="Аккаунт заблокирован")
     token = create_access_token(user.id, user.role.value)
-    return Token(access_token=token, user=UserOut.model_validate(user))
+    return Token(access_token=token, user=build_user_out(db, user))
 
 
 @router.get("/me", response_model=UserOut)
-def me(user: User = Depends(get_current_user)):
-    return UserOut.model_validate(user)
+def me(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    return build_user_out(db, user)
 
 
 @router.post("/logout")

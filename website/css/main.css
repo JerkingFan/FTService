@@ -837,6 +837,168 @@ img { max-width: 100%; display: block; }
   vertical-align: middle;
 }
 
+.header-user { position: relative; }
+.header-user__badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  background: var(--red, #c0392b);
+  color: #fff;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--white);
+}
+
+.master-alert {
+  margin: 16px 0;
+  padding: 14px 16px;
+  background: #fff8e1;
+  border: 1px solid #f0c040;
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-weight: 600;
+  color: #8a6d00;
+}
+
+.master-list-title {
+  font-size: 16px;
+  margin: 20px 0 12px;
+  padding-top: 16px;
+  border-top: 1px solid var(--gray-100);
+}
+
+.master-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 500;
+  max-width: 320px;
+  padding: 14px 18px;
+  background: var(--gray-900);
+  color: #fff;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  font-size: 14px;
+  font-weight: 600;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.25s, transform 0.25s;
+  pointer-events: none;
+}
+.master-toast--visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.cal {
+  margin: 16px 0;
+  padding: 16px;
+  background: var(--gray-100);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--gray-200);
+}
+.cal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.cal__title {
+  font-weight: 700;
+  font-size: 15px;
+  text-transform: capitalize;
+}
+.cal__nav {
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius);
+  background: var(--white);
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1;
+  color: var(--gray-700);
+}
+.cal__nav:hover { background: var(--orange-light); border-color: var(--orange); }
+.cal__weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--gray-500);
+  text-align: center;
+}
+.cal__grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+.cal__pad { aspect-ratio: 1; }
+.cal__day {
+  position: relative;
+  aspect-ratio: 1;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  background: var(--white);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  color: var(--gray-800);
+}
+.cal__day:hover { border-color: var(--orange); }
+.cal__day--today { font-weight: 800; }
+.cal__day--busy { background: var(--orange-light); }
+.cal__day--pending { box-shadow: inset 0 0 0 2px var(--orange); }
+.cal__day--selected {
+  background: var(--orange);
+  color: var(--white);
+  border-color: var(--orange-dark);
+}
+.cal__day--selected .cal__dot { background: var(--white); }
+.cal__dot {
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--orange);
+}
+.cal__clear {
+  margin-top: 10px;
+  background: none;
+  border: none;
+  color: var(--orange);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 4px 0;
+}
+
+.master-card__self {
+  font-size: 13px;
+  color: var(--gray-600);
+  font-weight: 600;
+}
+
+.cabinet-layout--master .cabinet-panel h2 { margin-bottom: 0; }
+
+@media (max-width: 600px) {
+  .master-toast { left: 16px; right: 16px; max-width: none; }
+}
+
 /* Help */
 .help-sections {
   display: grid;

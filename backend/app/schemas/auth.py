@@ -48,8 +48,7 @@ class UserOut(BaseModel):
     full_name: str
     phone: str | None
     role: UserRole
-
-    model_config = {"from_attributes": True}
+    master_id: int | None = None
 
 
 class Token(BaseModel):

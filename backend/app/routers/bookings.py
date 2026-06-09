@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import case, select
+from sqlalchemy import case, func, select
 from sqlalchemy.orm import Session
 
 from app.auth import get_current_user
@@ -14,6 +14,7 @@ from app.schemas.booking import (
     MasterBookingOut,
     MasterCabinetOut,
     MasterProfileOut,
+    MasterSummaryOut,
     RepairOut,
 )
 
@@ -60,6 +61,8 @@ def create_booking(
     master = db.get(Master, data.master_id)
     if not master or not master.is_active:
         raise HTTPException(status_code=404, detail="Мастер не найден")
+    if master.user_id == user.id:
+        raise HTTPException(status_code=400, detail="Нельзя записаться к себе")
     booking = Booking(
         buyer_id=user.id,
         master_id=data.master_id,
@@ -125,6 +128,36 @@ def my_cabinet(db: Session = Depends(get_db), user: User = Depends(get_current_u
         )
 
     return CabinetOut(bookings=booking_out, repairs=repair_out)
+
+
+@router.get("/master/summary", response_model=MasterSummaryOut)
+def master_summary(db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    master = _get_user_master(db, user)
+    pending_count = (
+        db.scalar(
+            select(func.count())
+            .select_from(Booking)
+            .where(Booking.master_id == master.id, Booking.status == BookingStatus.pending)
+        )
+        or 0
+    )
+    latest_booking_id = db.scalar(
+        select(Booking.id)
+        .where(Booking.master_id == master.id)
+        .order_by(Booking.id.desc())
+        .limit(1)
+    )
+    latest_pending_id = db.scalar(
+        select(Booking.id)
+        .where(Booking.master_id == master.id, Booking.status == BookingStatus.pending)
+        .order_by(Booking.id.desc())
+        .limit(1)
+    )
+    return MasterSummaryOut(
+        pending_count=pending_count,
+        latest_booking_id=latest_booking_id,
+        latest_pending_id=latest_pending_id,
+    )
 
 
 @router.get("/master", response_model=MasterCabinetOut)

@@ -60,6 +60,10 @@ async function refreshSession() {
   try {
     const user = await api.me();
     setAuth(getToken(), user);
+    if (user.role === "master") {
+      await pollMasterNotifications(false);
+      startMasterPolling();
+    }
     return user;
   } catch {
     clearAuth();
@@ -92,6 +96,11 @@ function formatBookingDate(d) {
   return date.toLocaleDateString("ru-RU", { day: "numeric", month: "long" });
 }
 
+function formatISODate(iso) {
+  const [y, m, day] = String(iso).slice(0, 10).split("-").map(Number);
+  return new Date(y, m - 1, day).toLocaleDateString("ru-RU", { day: "numeric", month: "long" });
+}
+
 function formatTime(t) {
   if (!t) return "";
   return String(t).slice(0, 5);
@@ -118,9 +127,191 @@ function statusLabel(status) {
   return `<span class="status-badge ${cls}">${text}</span>`;
 }
 
+const MASTER_LAST_SEEN_KEY = "ftservice_master_last_seen";
+let masterPollTimer = null;
+let masterCalState = null;
+let masterBookingsCache = [];
+
 function phoneHref(phone) {
   if (!phone) return "";
   return `tel:${String(phone).replace(/\s/g, "")}`;
+}
+
+function dateKeyFromParts(y, m, d) {
+  return `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+}
+
+function bookingDateKey(b) {
+  return String(b.booking_date).slice(0, 10);
+}
+
+function pluralPending(n) {
+  const mod10 = n % 10;
+  const mod100 = n % 100;
+  if (mod10 === 1 && mod100 !== 11) return "новая запись";
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return "новые записи";
+  return "новых записей";
+}
+
+function showMasterToast(msg) {
+  let el = document.getElementById("master-toast");
+  if (!el) {
+    el = document.createElement("div");
+    el.id = "master-toast";
+    el.className = "master-toast";
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  el.hidden = false;
+  el.classList.add("master-toast--visible");
+  clearTimeout(showMasterToast._timer);
+  showMasterToast._timer = setTimeout(() => {
+    el.classList.remove("master-toast--visible");
+    setTimeout(() => {
+      el.hidden = true;
+    }, 300);
+  }, 7000);
+}
+
+function updateMasterHeaderBadge(count) {
+  const link = document.querySelector(".header-user");
+  if (!link) return;
+  let badge = link.querySelector(".header-user__badge");
+  if (count > 0) {
+    if (!badge) {
+      badge = document.createElement("span");
+      badge.className = "header-user__badge";
+      link.appendChild(badge);
+    }
+    badge.textContent = count > 9 ? "9+" : String(count);
+  } else if (badge) {
+    badge.remove();
+  }
+}
+
+function markMasterBookingsSeen(bookings, summary) {
+  const ids = bookings.map((b) => b.id);
+  const maxId = Math.max(summary?.latest_booking_id || 0, ...ids, 0);
+  if (maxId > 0) localStorage.setItem(MASTER_LAST_SEEN_KEY, String(maxId));
+}
+
+async function pollMasterNotifications(showToast) {
+  const user = getCurrentUser();
+  if (!user || user.role !== "master" || !getToken()) return null;
+  if (!(await checkApi())) return null;
+  try {
+    const summary = await api.getMasterSummary();
+    updateMasterHeaderBadge(summary.pending_count);
+    const lastSeen = parseInt(localStorage.getItem(MASTER_LAST_SEEN_KEY) || "0", 10);
+    if (showToast && summary.latest_booking_id > lastSeen && summary.pending_count > 0) {
+      showMasterToast(`К вам записались — ${summary.pending_count} ${pluralPending(summary.pending_count)}`);
+    }
+    return summary;
+  } catch {
+    return null;
+  }
+}
+
+function startMasterPolling() {
+  if (masterPollTimer) return;
+  const user = getCurrentUser();
+  if (!user || user.role !== "master" || !getToken()) return;
+  pollMasterNotifications(true);
+  masterPollTimer = setInterval(() => pollMasterNotifications(true), 30000);
+}
+
+function renderMasterCalendar(bookings, state) {
+  const { year, month, selectedDate } = state;
+  const first = new Date(year, month, 1);
+  const startDow = (first.getDay() + 6) % 7;
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const monthLabel = first.toLocaleDateString("ru-RU", { month: "long", year: "numeric" });
+
+  const dayMeta = new Map();
+  for (const b of bookings) {
+    if (b.status === "cancelled" || b.status === "completed") continue;
+    const k = bookingDateKey(b);
+    const cur = dayMeta.get(k) || { count: 0, pending: false };
+    cur.count += 1;
+    if (b.status === "pending") cur.pending = true;
+    dayMeta.set(k, cur);
+  }
+
+  const today = dateKeyFromParts(
+    new Date().getFullYear(),
+    new Date().getMonth() + 1,
+    new Date().getDate()
+  );
+
+  let cells = "";
+  for (let i = 0; i < startDow; i++) cells += '<span class="cal__pad" aria-hidden="true"></span>';
+  for (let d = 1; d <= daysInMonth; d++) {
+    const k = dateKeyFromParts(year, month + 1, d);
+    const meta = dayMeta.get(k);
+    let cls = "cal__day";
+    if (k === today) cls += " cal__day--today";
+    if (meta) cls += " cal__day--busy";
+    if (meta?.pending) cls += " cal__day--pending";
+    if (selectedDate === k) cls += " cal__day--selected";
+    const dot = meta ? `<span class="cal__dot" aria-hidden="true"></span>` : "";
+    cells += `<button type="button" class="${cls}" data-cal-date="${k}">${d}${dot}</button>`;
+  }
+
+  return `<div class="cal">
+    <div class="cal__head">
+      <button type="button" class="cal__nav" data-cal-prev aria-label="Прошлый месяц">‹</button>
+      <span class="cal__title">${monthLabel}</span>
+      <button type="button" class="cal__nav" data-cal-next aria-label="Следующий месяц">›</button>
+    </div>
+    <div class="cal__weekdays"><span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Вс</span></div>
+    <div class="cal__grid">${cells}</div>
+    ${selectedDate ? '<button type="button" class="cal__clear" data-cal-clear>Показать все дни</button>' : ""}
+  </div>`;
+}
+
+function bindMasterCalendar(root, state, rerender) {
+  root.querySelector("[data-cal-prev]")?.addEventListener("click", () => {
+    state.month -= 1;
+    if (state.month < 0) {
+      state.month = 11;
+      state.year -= 1;
+    }
+    rerender();
+  });
+  root.querySelector("[data-cal-next]")?.addEventListener("click", () => {
+    state.month += 1;
+    if (state.month > 11) {
+      state.month = 0;
+      state.year += 1;
+    }
+    rerender();
+  });
+  root.querySelectorAll("[data-cal-date]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      state.selectedDate = btn.dataset.calDate;
+      rerender();
+    });
+  });
+  root.querySelector("[data-cal-clear]")?.addEventListener("click", () => {
+    state.selectedDate = null;
+    rerender();
+  });
+}
+
+function masterBookingCardHTML(b) {
+  const problem = b.problem ? `<p class="master-booking__problem">${escapeHtml(b.problem)}</p>` : "";
+  return `<div class="master-booking booking-slot ${b.status === "pending" ? "booking-slot--upcoming" : ""}" data-booking-id="${b.id}">
+    <div class="master-booking__main">
+      <div class="master-booking__head">
+        <strong>${formatBookingDate(b.booking_date)}, ${formatTime(b.booking_time)}</strong>
+        ${statusLabel(b.status)}
+      </div>
+      <div class="master-booking__client">${escapeHtml(b.buyer_name)} · ${escapeHtml(serviceLabel(b.service))}</div>
+      <a href="${phoneHref(b.phone)}" class="master-booking__phone">${escapeHtml(b.phone)}</a>
+      ${problem}
+    </div>
+    ${masterBookingActions(b)}
+  </div>`;
 }
 
 function masterBookingActions(b) {
@@ -156,6 +347,68 @@ function bindMasterBookingActions(root) {
   });
 }
 
+function renderMasterCabinetDOM(root, data, summary) {
+  const profile = data.profile;
+  masterBookingsCache = data.bookings;
+
+  if (!masterCalState) {
+    const now = new Date();
+    masterCalState = { year: now.getFullYear(), month: now.getMonth(), selectedDate: null };
+  }
+
+  let profileNote = "";
+  if (!profile.is_verified || !profile.is_active) {
+    profileNote =
+      '<div class="alert alert--info">Профиль на проверке. Записи уже видны здесь, в каталоге появитесь после одобрения.</div>';
+  }
+
+  const pendingAlert =
+    data.pending_count > 0
+      ? `<div class="master-alert" role="status">У вас ${data.pending_count} ${pluralPending(data.pending_count)} — подтвердите или отклоните</div>`
+      : "";
+
+  const pendingBadge =
+    data.pending_count > 0 ? `<span class="cabinet-nav__badge">${data.pending_count}</span>` : "";
+
+  const filtered = masterCalState.selectedDate
+    ? data.bookings.filter((b) => bookingDateKey(b) === masterCalState.selectedDate)
+    : data.bookings;
+
+  const listTitle = masterCalState.selectedDate
+    ? `Записи на ${formatISODate(masterCalState.selectedDate)}`
+    : "Все записи";
+
+  const bookingsHtml =
+    filtered.length === 0
+      ? `<p class="section__subtitle">${masterCalState.selectedDate ? "На этот день записей нет." : "Пока никто не записался."}</p>`
+      : filtered.map(masterBookingCardHTML).join("");
+
+  root.innerHTML = `
+    <div class="cabinet-layout cabinet-layout--master">
+      <nav class="cabinet-nav">
+        <a href="#incoming" class="active">Записи ко мне ${pendingBadge}</a>
+      </nav>
+      <div>
+        <div class="cabinet-panel" id="incoming">
+          <h2>${escapeHtml(profile.name)} · ${escapeHtml(profile.district)}</h2>
+          ${profileNote}
+          ${pendingAlert}
+          <div id="master-calendar-wrap">${renderMasterCalendar(data.bookings, masterCalState)}</div>
+          <h3 class="master-list-title">${listTitle}</h3>
+          <div id="master-bookings-list">${bookingsHtml}</div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  markMasterBookingsSeen(data.bookings, summary);
+  updateMasterHeaderBadge(data.pending_count);
+  bindMasterBookingActions(root);
+  bindMasterCalendar(document.getElementById("master-calendar-wrap"), masterCalState, () =>
+    renderMasterCabinetDOM(root, data, summary)
+  );
+}
+
 async function loadMasterCabinetPage() {
   const root = document.getElementById("cabinet-root");
   if (!root) return;
@@ -163,57 +416,8 @@ async function loadMasterCabinetPage() {
   root.innerHTML = '<p class="loading-hint">Загрузка…</p>';
 
   try {
-    const data = await api.getMasterCabinet();
-    const profile = data.profile;
-    let profileNote = "";
-    if (!profile.is_verified || !profile.is_active) {
-      profileNote =
-        '<div class="alert alert--info">Профиль на проверке. Записи уже видны здесь, в каталоге появитесь после одобрения.</div>';
-    }
-
-    const pendingBadge =
-      data.pending_count > 0
-        ? `<span class="cabinet-nav__badge">${data.pending_count}</span>`
-        : "";
-
-    const bookingsHtml =
-      data.bookings.length === 0
-        ? '<p class="section__subtitle">Пока никто не записался.</p>'
-        : data.bookings
-            .map((b) => {
-              const problem = b.problem
-                ? `<p class="master-booking__problem">${escapeHtml(b.problem)}</p>`
-                : "";
-              return `<div class="master-booking booking-slot ${b.status === "pending" ? "booking-slot--upcoming" : ""}">
-        <div class="master-booking__main">
-          <div class="master-booking__head">
-            <strong>${formatBookingDate(b.booking_date)}, ${formatTime(b.booking_time)}</strong>
-            ${statusLabel(b.status)}
-          </div>
-          <div class="master-booking__client">${escapeHtml(b.buyer_name)} · ${escapeHtml(serviceLabel(b.service))}</div>
-          <a href="${phoneHref(b.phone)}" class="master-booking__phone">${escapeHtml(b.phone)}</a>
-          ${problem}
-        </div>
-        ${masterBookingActions(b)}
-      </div>`;
-            })
-            .join("");
-
-    root.innerHTML = `
-      <div class="cabinet-layout">
-        <nav class="cabinet-nav">
-          <a href="#incoming" class="active">Записи ко мне ${pendingBadge}</a>
-        </nav>
-        <div>
-          <div class="cabinet-panel" id="incoming">
-            <h2>${escapeHtml(profile.name)} · ${escapeHtml(profile.district)}</h2>
-            ${profileNote}
-            ${bookingsHtml}
-          </div>
-        </div>
-      </div>
-    `;
-    bindMasterBookingActions(root);
+    const [data, summary] = await Promise.all([api.getMasterCabinet(), api.getMasterSummary()]);
+    renderMasterCabinetDOM(root, data, summary);
   } catch (e) {
     root.innerHTML = `<div class="alert alert--info">${escapeHtml(e.message)}</div>`;
   }
@@ -402,23 +606,32 @@ async function loadBookingMasters() {
   if (!sel) return;
   const masters = await loadMasters();
   if (!masters?.length) {
-    sel.innerHTML = '<option value="">Нет мастеров (запустите API)</option>';
+    sel.innerHTML = '<option value="">Нет мастеров</option>';
     return;
   }
+  const user = getCurrentUser();
+  const ownId = user?.master_id;
+  const list = ownId != null ? masters.filter((m) => String(m.id) !== String(ownId)) : masters;
   const params = new URLSearchParams(location.search);
-  const pre = params.get("master");
+  let pre = params.get("master");
+  if (ownId != null && String(pre) === String(ownId)) pre = null;
+  if (!list.length) {
+    sel.innerHTML = '<option value="">Нет других мастеров</option>';
+    return;
+  }
   sel.innerHTML =
     '<option value="">Выберите</option>' +
-    masters
+    list
       .map(
         (m) =>
-          `<option value="${m.id}"${String(pre) === String(m.id) ? " selected" : ""}>${escapeHtml(m.name)}</option>`
+          `<option value="${m.id}"${pre && String(pre) === String(m.id) ? " selected" : ""}>${escapeHtml(m.name)}</option>`
       )
       .join("");
 }
 
 async function initBookingAuth() {
   const notice = document.getElementById("booking-auth-notice");
+  const masterNotice = document.getElementById("booking-master-notice");
   const form = document.getElementById("booking-form");
   if (!form) return;
 
@@ -427,12 +640,14 @@ async function initBookingAuth() {
   const user = getCurrentUser();
   if (user && getToken()) {
     if (notice) notice.style.display = "none";
+    if (masterNotice) masterNotice.style.display = user.role === "master" ? "block" : "none";
     const phone = form.querySelector('[name="phone"]');
     if (phone && user.phone && !phone.value) phone.value = user.phone;
     return true;
   }
 
   if (notice) notice.style.display = "block";
+  if (masterNotice) masterNotice.style.display = "none";
   return false;
 }
 
@@ -443,4 +658,5 @@ document.addEventListener("DOMContentLoaded", async () => {
   initRegisterPage();
   loadCabinetPage();
   initBookingAuth();
+  startMasterPolling();
 });

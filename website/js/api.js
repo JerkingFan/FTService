@@ -156,6 +156,10 @@ const api = {
     return apiFetch("/bookings/master");
   },
 
+  async getMasterSummary() {
+    return apiFetch("/bookings/master/summary");
+  },
+
   async updateBookingStatus(bookingId, status) {
     return apiFetch(`/bookings/${bookingId}/status`, {
       method: "PATCH",

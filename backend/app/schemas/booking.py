@@ -69,5 +69,11 @@ class MasterCabinetOut(BaseModel):
     pending_count: int
 
 
+class MasterSummaryOut(BaseModel):
+    pending_count: int
+    latest_booking_id: int | None = None
+    latest_pending_id: int | None = None
+
+
 class BookingStatusUpdate(BaseModel):
     status: BookingStatus

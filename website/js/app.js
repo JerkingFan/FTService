@@ -212,11 +212,15 @@ function partDetailHTML(p) {
   `;
 }
 
-function masterCardHTML(m) {
+function masterCardHTML(m, ownMasterId) {
   const initials = getInitials(m.name);
+  const isSelf = ownMasterId != null && String(m.id) === String(ownMasterId);
   const dist = m.distance_km != null ? `<span class="master-card__distance">${icon("pin", "icon icon--sm")} ${m.distance_km} км</span>` : "";
   const phone = m.phone ? `<span class="master-card__phone">${phoneLink(m.phone)}</span>` : "";
   const hours = m.working_hours ? `<span class="master-card__hours">${escHtml(m.working_hours)}</span>` : "";
+  const bookAction = isSelf
+    ? '<span class="master-card__self">Ваш профиль</span>'
+    : `<a href="booking.html?master=${m.id}" class="btn btn--primary btn--sm">Записаться</a>`;
   return `<div class="master-card">
     <div class="master-card__avatar" aria-hidden="true">${initials}<span class="master-card__avatar-badge">${icon("wrench", "icon icon--sm icon--white")}</span></div>
     <div class="master-card__info">
@@ -233,7 +237,7 @@ function masterCardHTML(m) {
       </div>
       <div class="master-card__extra">${phone} ${hours}</div>
       <div class="master-card__actions">
-        <a href="booking.html?master=${m.id}" class="btn btn--primary btn--sm">Записаться</a>
+        ${bookAction}
         <span class="master-card__from">от ${formatPrice(m.priceFrom)}</span>
       </div>
     </div>
@@ -245,9 +249,10 @@ function renderListings(container, items) {
   container.innerHTML = items.map(listingCardHTML).join("");
 }
 
-function renderMasters(container, items) {
+function renderMasters(container, items, ownMasterId) {
   if (!container) return;
-  container.innerHTML = items.map(masterCardHTML).join("");
+  const ownId = ownMasterId ?? (typeof getCurrentUser === "function" ? getCurrentUser()?.master_id : undefined);
+  container.innerHTML = items.map((m) => masterCardHTML(m, ownId)).join("");
 }
 
 function initSearch() {
