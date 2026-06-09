@@ -152,6 +152,17 @@ const api = {
     return apiFetch("/bookings/cabinet");
   },
 
+  async getMasterCabinet() {
+    return apiFetch("/bookings/master");
+  },
+
+  async updateBookingStatus(bookingId, status) {
+    return apiFetch(`/bookings/${bookingId}/status`, {
+      method: "PATCH",
+      body: JSON.stringify({ status }),
+    });
+  },
+
   async login(email, password) {
     const data = await apiFetch("/auth/login", {
       method: "POST",

@@ -774,6 +774,69 @@ img { max-width: 100%; display: block; }
   background: var(--orange-light);
 }
 
+.master-booking {
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.master-booking__main { flex: 1; min-width: 200px; }
+
+.master-booking__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.master-booking__client {
+  font-size: 14px;
+  color: var(--gray-700);
+  margin-bottom: 4px;
+}
+
+.master-booking__phone {
+  display: inline-block;
+  font-weight: 600;
+  font-size: 14px;
+  text-decoration: none !important;
+  margin-bottom: 6px;
+}
+
+.master-booking__problem {
+  font-size: 13px;
+  color: var(--gray-600);
+  margin-top: 6px;
+  padding: 8px 10px;
+  background: var(--white);
+  border-radius: var(--radius);
+  border: 1px solid var(--gray-200);
+}
+
+.booking-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.cabinet-nav__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  margin-left: 6px;
+  background: var(--orange);
+  color: var(--white);
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  vertical-align: middle;
+}
+
 /* Help */
 .help-sections {
   display: grid;

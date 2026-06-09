@@ -145,12 +145,13 @@ def _ensure_test_users(db):
     from app.models import User
 
     specs = [
-        ("admin@ftservice.kg", "Админ", UserRole.admin, "admin123"),
-        ("mod@ftservice.kg", "Менеджер", UserRole.moderator, "mod123"),
-        ("buyer@test.kg", "Тест Покупатель", UserRole.buyer, "buyer123"),
-        ("seller@test.kg", "Тест Продавец", UserRole.seller, "seller123"),
+        ("admin@ftservice.kg", "Админ", UserRole.admin, "admin123", "+996700000001"),
+        ("mod@ftservice.kg", "Менеджер", UserRole.moderator, "mod123", "+996700000002"),
+        ("buyer@test.kg", "Тест Покупатель", UserRole.buyer, "buyer123", "+996555123456"),
+        ("seller@test.kg", "Тест Продавец", UserRole.seller, "seller123", "+996555987654"),
+        ("master@test.kg", "Темирлан А.", UserRole.master, "master123", "+996555501001"),
     ]
-    for email, name, role, pwd in specs:
+    for email, name, role, pwd, phone in specs:
         if db.scalar(select(User).where(User.email == email)):
             continue
         db.add(
@@ -159,10 +160,25 @@ def _ensure_test_users(db):
                 full_name=name,
                 hashed_password=hash_password(pwd),
                 role=role,
-                phone="+996700000000",
+                phone=phone,
             )
         )
     db.commit()
+    _ensure_master_account(db)
+
+
+def _ensure_master_account(db):
+    user = db.scalar(select(User).where(User.email == "master@test.kg"))
+    if not user:
+        return
+    if db.scalar(select(Master).where(Master.user_id == user.id)):
+        return
+    master = db.scalar(select(Master).where(Master.name == "Темирлан А."))
+    if not master:
+        master = db.scalar(select(Master).where(Master.user_id.is_(None)).order_by(Master.id).limit(1))
+    if master and master.user_id is None:
+        master.user_id = user.id
+        db.commit()
 
 
 def seed_database():
@@ -204,7 +220,14 @@ def seed_database():
             hashed_password=hash_password("seller123"),
             role=UserRole.seller,
         )
-        db.add_all([admin, mod, buyer, seller])
+        master_user = User(
+            email="master@test.kg",
+            full_name="Темирлан А.",
+            phone="+996555501001",
+            hashed_password=hash_password("master123"),
+            role=UserRole.master,
+        )
+        db.add_all([admin, mod, buyer, seller, master_user])
         db.flush()
 
         for p in CATALOG_PARTS:
@@ -231,16 +254,31 @@ def seed_database():
             master_objs.append(m)
         db.flush()
 
-        db.add(
-            Booking(
-                buyer_id=buyer.id,
-                master_id=master_objs[0].id,
-                service="Диагностика электрики",
-                booking_date=date(2026, 5, 18),
-                booking_time=time(10, 0),
-                phone="+996555123456",
-                status=BookingStatus.confirmed,
-            )
+        master_objs[0].user_id = master_user.id
+
+        db.add_all(
+            [
+                Booking(
+                    buyer_id=buyer.id,
+                    master_id=master_objs[0].id,
+                    service="diagnostic",
+                    booking_date=date(2026, 5, 18),
+                    booking_time=time(10, 0),
+                    phone="+996555123456",
+                    problem="Не заводится, мигает лампа аккумулятора",
+                    status=BookingStatus.confirmed,
+                ),
+                Booking(
+                    buyer_id=buyer.id,
+                    master_id=master_objs[0].id,
+                    service="repair",
+                    booking_date=date(2026, 6, 12),
+                    booking_time=time(14, 0),
+                    phone="+996555123456",
+                    problem="Пропала зарядка, подозрение на генератор",
+                    status=BookingStatus.pending,
+                ),
+            ]
         )
         db.add_all(
             [

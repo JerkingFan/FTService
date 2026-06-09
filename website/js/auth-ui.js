@@ -31,10 +31,11 @@ function renderAuthHeader() {
     } else if (user.role === "moderator") {
       modLink = '<a href="admin.html" class="btn btn--primary btn--sm">Модерация</a>';
     }
+    const cabinetLabel = user.role === "master" ? "Мои записи" : escapeHtml(user.full_name);
     el.innerHTML = `
       <a href="cabinet.html" class="header-user" title="${escapeHtml(user.email)}">
         <span class="header-user__avatar">${initials}</span>
-        <span class="header-user__name">${escapeHtml(user.full_name)}</span>
+        <span class="header-user__name">${cabinetLabel}</span>
       </a>
       ${modLink}
       <button type="button" class="btn btn--outline btn--sm" id="btn-logout">Выйти</button>
@@ -108,13 +109,114 @@ function serviceLabel(key) {
 
 function statusLabel(status) {
   const map = {
-    pending: ["Ожидает", "status-badge--pending"],
-    confirmed: ["Подтверждено", "status-badge--confirmed"],
-    completed: ["Выполнено", "status-badge--completed"],
-    cancelled: ["Отменено", "status-badge--cancelled"],
+    pending: ["Новая", "status-badge--pending"],
+    confirmed: ["Подтверждена", "status-badge--confirmed"],
+    completed: ["Выполнена", "status-badge--completed"],
+    cancelled: ["Отменена", "status-badge--cancelled"],
   };
   const [text, cls] = map[status] || [status, ""];
   return `<span class="status-badge ${cls}">${text}</span>`;
+}
+
+function phoneHref(phone) {
+  if (!phone) return "";
+  return `tel:${String(phone).replace(/\s/g, "")}`;
+}
+
+function masterBookingActions(b) {
+  if (b.status === "pending") {
+    return `<div class="booking-actions">
+      <button type="button" class="btn btn--primary btn--sm" data-booking-action="confirmed" data-booking-id="${b.id}">Подтвердить</button>
+      <button type="button" class="btn btn--outline btn--sm" data-booking-action="cancelled" data-booking-id="${b.id}">Отклонить</button>
+    </div>`;
+  }
+  if (b.status === "confirmed") {
+    return `<div class="booking-actions">
+      <button type="button" class="btn btn--primary btn--sm" data-booking-action="completed" data-booking-id="${b.id}">Выполнено</button>
+      <button type="button" class="btn btn--outline btn--sm" data-booking-action="cancelled" data-booking-id="${b.id}">Отменить</button>
+    </div>`;
+  }
+  return "";
+}
+
+function bindMasterBookingActions(root) {
+  root.querySelectorAll("[data-booking-action]").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const id = btn.dataset.bookingId;
+      const status = btn.dataset.bookingAction;
+      btn.disabled = true;
+      try {
+        await api.updateBookingStatus(id, status);
+        await loadMasterCabinetPage();
+      } catch (err) {
+        alert(err.message || "Не удалось обновить запись");
+        btn.disabled = false;
+      }
+    });
+  });
+}
+
+async function loadMasterCabinetPage() {
+  const root = document.getElementById("cabinet-root");
+  if (!root) return;
+
+  root.innerHTML = '<p class="loading-hint">Загрузка…</p>';
+
+  try {
+    const data = await api.getMasterCabinet();
+    const profile = data.profile;
+    let profileNote = "";
+    if (!profile.is_verified || !profile.is_active) {
+      profileNote =
+        '<div class="alert alert--info">Профиль на проверке. Записи уже видны здесь, в каталоге появитесь после одобрения.</div>';
+    }
+
+    const pendingBadge =
+      data.pending_count > 0
+        ? `<span class="cabinet-nav__badge">${data.pending_count}</span>`
+        : "";
+
+    const bookingsHtml =
+      data.bookings.length === 0
+        ? '<p class="section__subtitle">Пока никто не записался.</p>'
+        : data.bookings
+            .map((b) => {
+              const problem = b.problem
+                ? `<p class="master-booking__problem">${escapeHtml(b.problem)}</p>`
+                : "";
+              return `<div class="master-booking booking-slot ${b.status === "pending" ? "booking-slot--upcoming" : ""}">
+        <div class="master-booking__main">
+          <div class="master-booking__head">
+            <strong>${formatBookingDate(b.booking_date)}, ${formatTime(b.booking_time)}</strong>
+            ${statusLabel(b.status)}
+          </div>
+          <div class="master-booking__client">${escapeHtml(b.buyer_name)} · ${escapeHtml(serviceLabel(b.service))}</div>
+          <a href="${phoneHref(b.phone)}" class="master-booking__phone">${escapeHtml(b.phone)}</a>
+          ${problem}
+        </div>
+        ${masterBookingActions(b)}
+      </div>`;
+            })
+            .join("");
+
+    root.innerHTML = `
+      <div class="cabinet-layout">
+        <nav class="cabinet-nav">
+          <a href="#incoming" class="active">Записи ко мне ${pendingBadge}</a>
+        </nav>
+        <div>
+          <div class="cabinet-panel" id="incoming">
+            <h2>${escapeHtml(profile.name)} · ${escapeHtml(profile.district)}</h2>
+            ${profileNote}
+            ${bookingsHtml}
+          </div>
+        </div>
+      </div>
+    `;
+    bindMasterBookingActions(root);
+  } catch (e) {
+    root.innerHTML = `<div class="alert alert--info">${escapeHtml(e.message)}</div>`;
+  }
 }
 
 async function loadCabinetPage() {
@@ -122,6 +224,12 @@ async function loadCabinetPage() {
   if (!root) return;
 
   if (!(await requireAuth())) return;
+
+  const user = getCurrentUser();
+  if (user?.role === "master") {
+    await loadMasterCabinetPage();
+    return;
+  }
 
   root.innerHTML = '<p class="loading-hint">Загрузка…</p>';
 

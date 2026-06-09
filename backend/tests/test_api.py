@@ -98,6 +98,42 @@ def test_cabinet_requires_auth(buyer_token):
     assert "bookings" in r.json()
 
 
+@pytest.fixture(scope="module")
+def master_token():
+    r = client.post(
+        "/api/auth/login",
+        json={"email": "master@test.kg", "password": "master123"},
+    )
+    if r.status_code != 200:
+        pytest.skip("master@test.kg not in DB — пересоздайте сид")
+    return r.json()["access_token"]
+
+
+def test_master_cabinet_requires_master(buyer_token, master_token):
+    assert client.get("/api/bookings/master", headers=auth(buyer_token)).status_code == 403
+    r = client.get("/api/bookings/master", headers=auth(master_token))
+    assert r.status_code == 200
+    data = r.json()
+    assert "profile" in data
+    assert "bookings" in data
+    assert "pending_count" in data
+
+
+def test_master_updates_booking_status(master_token):
+    r = client.get("/api/bookings/master", headers=auth(master_token))
+    pending = [b for b in r.json()["bookings"] if b["status"] == "pending"]
+    if not pending:
+        pytest.skip("no pending bookings")
+    bid = pending[0]["id"]
+    upd = client.patch(
+        f"/api/bookings/{bid}/status",
+        headers=auth(master_token),
+        json={"status": "confirmed"},
+    )
+    assert upd.status_code == 200
+    assert upd.json()["status"] == "confirmed"
+
+
 def test_favorites_flow(buyer_token):
     parts = client.get("/api/parts", params={"limit": 1}).json()["items"]
     pid = parts[0]["id"]

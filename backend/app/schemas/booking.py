@@ -1,4 +1,4 @@
-from datetime import date, time
+from datetime import date, datetime, time
 
 from pydantic import BaseModel, Field
 
@@ -41,3 +41,33 @@ class RepairOut(BaseModel):
 class CabinetOut(BaseModel):
     bookings: list[BookingOut]
     repairs: list[RepairOut]
+
+
+class MasterProfileOut(BaseModel):
+    id: int
+    name: str
+    district: str
+    is_active: bool
+    is_verified: bool
+
+
+class MasterBookingOut(BaseModel):
+    id: int
+    buyer_name: str
+    service: str
+    booking_date: date
+    booking_time: time
+    status: BookingStatus
+    phone: str
+    problem: str | None = None
+    created_at: datetime | None = None
+
+
+class MasterCabinetOut(BaseModel):
+    profile: MasterProfileOut
+    bookings: list[MasterBookingOut]
+    pending_count: int
+
+
+class BookingStatusUpdate(BaseModel):
+    status: BookingStatus
