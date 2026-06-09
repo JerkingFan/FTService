@@ -8,7 +8,7 @@ from fastapi.staticfiles import StaticFiles
 from app.config import settings
 from app.database import Base, engine
 from app.migrate import run_migrations
-from app.routers import admin, auth, bookings, health, masters, me, parts, seller, uploads
+from app.routers import admin, auth, bookings, chat, health, masters, me, parts, seller, uploads
 from app.seed import seed_database
 from app.uploads import ensure_upload_dir
 
@@ -43,6 +43,7 @@ app.include_router(parts.router, prefix="/api")
 app.include_router(masters.router, prefix="/api")
 app.include_router(bookings.router, prefix="/api")
 app.include_router(me.router, prefix="/api")
+app.include_router(chat.router, prefix="/api")
 app.include_router(seller.router, prefix="/api")
 app.include_router(uploads.router, prefix="/api")
 app.include_router(admin.router, prefix="/api")

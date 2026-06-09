@@ -2,9 +2,6 @@ import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Dimensions,
-  FlatList,
-  Image,
-  Linking,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -15,12 +12,22 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import type { RouteProp } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { api } from "../api";
 import { storage } from "../storage";
 import type { RootStackParamList } from "../navigation/types";
 import type { AppConfig, Part } from "../types";
 import { colors, radius, shadow, spacing, typography, CATEGORY_COLORS } from "../theme";
+import { PartImageCarousel } from "../components/PartImageCarousel";
 import { CATEGORY_NAMES, conditionLabel, formatPrice, getCategory } from "../utils/format";
+import {
+  callSellerPhone,
+  openTelegramForPart,
+  openWhatsAppForPart,
+  showSellerContactMenu,
+} from "../utils/sellerContact";
+import { openPartChat } from "../utils/chatNavigation";
 
 type Route = RouteProp<RootStackParamList, "PartDetail">;
 
@@ -29,12 +36,11 @@ interface Props {
 }
 
 export function PartDetailScreen({ route }: Props) {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const insets = useSafeAreaInsets();
   const [part, setPart] = useState<Part | null>(null);
   const [config, setConfig] = useState<AppConfig | null>(null);
   const [loading, setLoading] = useState(true);
-  const [imgIndex, setImgIndex] = useState(0);
-
   useEffect(() => {
     storage.addViewedPart(route.params.id).catch(() => {});
   }, [route.params.id]);
@@ -48,23 +54,6 @@ export function PartDetailScreen({ route }: Props) {
       .catch(() => setPart(null))
       .finally(() => setLoading(false));
   }, [route.params.id]);
-
-  const openWhatsApp = () => {
-    if (!config || !part) return;
-    const msg = encodeURIComponent(`Здравствуйте! Интересует: ${part.title}`);
-    Linking.openURL(`https://wa.me/${config.whatsapp}?text=${msg}`);
-  };
-
-  const openTelegram = () => {
-    if (!config || !part) return;
-    const user = config.telegram.replace("@", "");
-    const msg = encodeURIComponent(`Интересует: ${part.title}`);
-    Linking.openURL(`https://t.me/${user}?text=${msg}`);
-  };
-
-  const callSeller = () => {
-    if (part?.phone) Linking.openURL(`tel:${part.phone.replace(/\s/g, "")}`);
-  };
 
   if (loading) {
     return (
@@ -98,38 +87,14 @@ export function PartDetailScreen({ route }: Props) {
       >
         <View style={[styles.gallery, { height: galleryHeight, backgroundColor: catColor }]}>
           {images.length > 0 ? (
-            <>
-              <FlatList
-                data={images}
-                horizontal
-                pagingEnabled
-                showsHorizontalScrollIndicator={false}
-                keyExtractor={(u, i) => `${u}_${i}`}
-                onMomentumScrollEnd={(e) => {
-                  const next = Math.round(e.nativeEvent.contentOffset.x / screenW);
-                  setImgIndex(next);
-                }}
-                renderItem={({ item }) => (
-                  <View style={{ width: screenW, height: galleryHeight }}>
-                    <Image source={{ uri: item }} style={styles.galleryImg} resizeMode="cover" />
-                  </View>
-                )}
-              />
-              {images.length > 1 ? (
-                <>
-                  <View style={styles.photoCounter}>
-                    <Text style={styles.photoCounterText}>
-                      {imgIndex + 1} / {images.length}
-                    </Text>
-                  </View>
-                  <View style={styles.dots}>
-                    {images.map((_, i) => (
-                      <View key={String(i)} style={[styles.dot, i === imgIndex && styles.dotActive]} />
-                    ))}
-                  </View>
-                </>
-              ) : null}
-            </>
+            <PartImageCarousel
+              images={images}
+              fallbackAbbr={cat.abbr}
+              fallbackColor={catColor}
+              height={galleryHeight}
+              width={screenW}
+              showArrows
+            />
           ) : (
             <Text style={styles.heroAbbr}>{cat.abbr}</Text>
           )}
@@ -206,11 +171,21 @@ export function PartDetailScreen({ route }: Props) {
             <Text style={styles.blockTitle}>Продавец</Text>
             <Text style={styles.sellerName}>{part.seller}</Text>
             {part.phone ? (
-              <TouchableOpacity style={styles.phoneRow} onPress={callSeller}>
+              <TouchableOpacity
+                style={styles.phoneRow}
+                onPress={() => part && callSellerPhone(part).catch(() => {})}
+              >
                 <Ionicons name="call-outline" size={18} color={colors.orange} />
                 <Text style={styles.phone}>{part.phone}</Text>
               </TouchableOpacity>
             ) : null}
+            <TouchableOpacity
+              style={styles.writeSellerBtn}
+              onPress={() => part && openPartChat(part, navigation)}
+            >
+              <Ionicons name="chatbubble-ellipses-outline" size={18} color="#fff" />
+              <Text style={styles.writeSellerBtnText}>Написать в чате</Text>
+            </TouchableOpacity>
             {part.working_hours ? (
               <View style={styles.metaLine}>
                 <Ionicons name="time-outline" size={16} color={colors.textMuted} />
@@ -232,19 +207,31 @@ export function PartDetailScreen({ route }: Props) {
       </ScrollView>
 
       <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 12) }]}>
-        <TouchableOpacity style={[styles.contactBtn, styles.waBtn]} onPress={openWhatsApp}>
+        <TouchableOpacity
+          style={[styles.contactBtn, styles.waBtn]}
+          onPress={() => openWhatsAppForPart(part).catch(() => {})}
+        >
           <Ionicons name="logo-whatsapp" size={22} color="#fff" />
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.contactBtn, styles.tgBtn]} onPress={openTelegram}>
+        <TouchableOpacity
+          style={[styles.contactBtn, styles.tgBtn]}
+          onPress={() => openTelegramForPart(part).catch(() => {})}
+        >
           <Ionicons name="paper-plane" size={20} color="#fff" />
         </TouchableOpacity>
         {part.phone ? (
-          <TouchableOpacity style={[styles.contactBtn, styles.callBtn]} onPress={callSeller}>
+          <TouchableOpacity
+            style={[styles.contactBtn, styles.callBtn]}
+            onPress={() => callSellerPhone(part).catch(() => {})}
+          >
             <Ionicons name="call" size={22} color="#fff" />
             <Text style={styles.callLabel}>Позвонить</Text>
           </TouchableOpacity>
         ) : (
-          <TouchableOpacity style={[styles.contactBtn, styles.callBtn, { flex: 1 }]} onPress={openWhatsApp}>
+          <TouchableOpacity
+            style={[styles.contactBtn, styles.callBtn, { flex: 1 }]}
+            onPress={() => showSellerContactMenu(part, navigation)}
+          >
             <Text style={styles.callLabel}>Написать</Text>
           </TouchableOpacity>
         )}
@@ -373,6 +360,17 @@ const styles = StyleSheet.create({
   sellerName: { fontSize: 17, fontWeight: "700", color: colors.text },
   phoneRow: { flexDirection: "row", alignItems: "center", gap: 8, marginTop: 10 },
   phone: { fontSize: 16, fontWeight: "600", color: colors.orange },
+  writeSellerBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    marginTop: 12,
+    backgroundColor: colors.orange,
+    borderRadius: radius.md,
+    paddingVertical: 12,
+  },
+  writeSellerBtnText: { color: "#fff", fontSize: 15, fontWeight: "800" },
   metaLine: { flexDirection: "row", alignItems: "center", gap: 8, marginTop: 8 },
   metaText: { flex: 1, fontSize: 14, color: colors.textSecondary },
   returnNote: { textAlign: "center", marginTop: spacing.lg, fontSize: 13, color: colors.textMuted },

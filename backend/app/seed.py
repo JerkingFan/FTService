@@ -122,6 +122,18 @@ def _backfill_part_media(db):
         db.commit()
 
 
+def _backfill_part_sellers(db):
+    seller = db.scalar(select(User).where(User.email == "seller@test.kg"))
+    if not seller:
+        return
+    parts = db.scalars(select(Part).where(Part.seller_id.is_(None))).all()
+    if not parts:
+        return
+    for part in parts:
+        part.seller_id = seller.id
+    db.commit()
+
+
 def _backfill_masters(db):
     masters = db.scalars(select(Master)).all()
     if not masters or masters[0].latitude is not None:
@@ -188,6 +200,7 @@ def seed_database():
             _ensure_test_users(db)
             _ensure_catalog(db)
             _backfill_part_media(db)
+            _backfill_part_sellers(db)
             _backfill_masters(db)
             _seed_pending_submissions(db)
             return

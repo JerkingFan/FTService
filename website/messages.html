@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Сообщения — FTservice</title>
+  <link rel="stylesheet" href="css/main.css?v=2">
+  <link rel="stylesheet" href="css/icons.css?v=2">
+  <link rel="stylesheet" href="css/auth.css?v=2">
+  <link rel="stylesheet" href="css/chat.css?v=1">
+</head>
+<body>
+  <header class="header">
+    <div class="container header__inner">
+      <a href="index.html" class="logo">
+        <div class="logo__mark">FT</div>
+        <div class="logo__text">FT<span>service</span></div>
+      </a>
+      <nav class="nav">
+        <a href="parts.html">Запчасти</a>
+        <a href="masters.html">Мастера</a>
+        <a href="messages.html" class="active">Сообщения</a>
+        <a href="cabinet.html">Кабинет</a>
+      </nav>
+      <div class="header__actions"></div>
+    </div>
+  </header>
+
+  <div class="container chat-page">
+    <div class="breadcrumb"><a href="index.html">Главная</a> / Сообщения</div>
+    <h1 class="section__title">Чаты с продавцами</h1>
+    <p class="section__subtitle">Переписка по объявлениям — как в приложении</p>
+
+    <a href="messages.html" class="btn btn--outline btn--sm chat-back" id="chat-back">← Все диалоги</a>
+
+    <div class="chat-layout" id="chat-layout">
+      <div class="chat-panel chat-list-panel">
+        <div class="chat-panel__head">Диалоги</div>
+        <div class="chat-list" id="chat-list">
+          <p class="chat-empty">Загрузка…</p>
+        </div>
+      </div>
+
+      <div class="chat-panel chat-thread" id="chat-thread" style="display:none;">
+        <div class="chat-panel__head">Переписка</div>
+        <div class="chat-thread__topic" id="chat-topic"></div>
+        <div class="chat-messages" id="chat-messages"></div>
+        <div class="chat-compose">
+          <textarea id="chat-input" rows="2" placeholder="Сообщение…" maxlength="2000"></textarea>
+          <button type="button" class="btn btn--primary" id="chat-send">Отправить</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer footer--simple">
+    <div class="container">
+      <div class="footer__bottom">
+        <span>© 2026 FTservice</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/data.js"></script>
+  <script src="js/icons.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth-ui.js"></script>
+  <script src="js/chat.js"></script>
+</body>
+</html>

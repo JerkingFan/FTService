@@ -1,5 +1,6 @@
 import type { BookingPayload, Master, Part, User } from "../types";
 import { storage } from "../storage";
+import { mockChatStore } from "./chatStore";
 import { enrichPartImages } from "../utils/stockImages";
 import { haversineKm } from "./geo";
 import {
@@ -185,6 +186,31 @@ export const mockApi = {
   getCabinet: async () => {
     await delay();
     return MOCK_CABINET;
+  },
+  getChatUnreadCount: async () => {
+    await delay(80);
+    return { count: await mockChatStore.unreadCount() };
+  },
+  getConversations: async () => {
+    await delay(200);
+    return mockChatStore.listConversations();
+  },
+  startConversation: async (partId: number, message?: string) => {
+    await delay(250);
+    const p = MOCK_PARTS.find((x) => x.id === partId);
+    if (!p) throw new Error("Объявление не найдено");
+    const user = (await storage.getUser()) || MOCK_USER;
+    return mockChatStore.startConversation(enrichPartImages(p), user.id, message);
+  },
+  getChatMessages: async (conversationId: number) => {
+    await delay(150);
+    const user = (await storage.getUser()) || MOCK_USER;
+    return mockChatStore.getMessages(conversationId, user.id);
+  },
+  sendChatMessage: async (conversationId: number, body: string) => {
+    await delay(120);
+    const user = (await storage.getUser()) || MOCK_USER;
+    return mockChatStore.sendMessage(conversationId, user.id, body);
   },
   logout: async () => {
     await storage.clear();

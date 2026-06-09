@@ -285,6 +285,32 @@ const api = {
       body: JSON.stringify(payload),
     });
   },
+
+  async getChatUnreadCount() {
+    return apiFetch("/chat/unread-count");
+  },
+
+  async getConversations() {
+    return apiFetch("/chat/conversations");
+  },
+
+  async startConversation(partId, message) {
+    return apiFetch("/chat/conversations", {
+      method: "POST",
+      body: JSON.stringify({ part_id: partId, message: message || null }),
+    });
+  },
+
+  async getChatMessages(conversationId) {
+    return apiFetch(`/chat/conversations/${conversationId}/messages`);
+  },
+
+  async sendChatMessage(conversationId, body) {
+    return apiFetch(`/chat/conversations/${conversationId}/messages`, {
+      method: "POST",
+      body: JSON.stringify({ body }),
+    });
+  },
 };
 
 function isStaffUser() {

@@ -21,6 +21,7 @@ import { SubmitPartScreen } from "./src/screens/SubmitPartScreen";
 import { PartsFeedScreen } from "./src/screens/PartsFeedScreen";
 import { FavoritesScreen } from "./src/screens/FavoritesScreen";
 import { ChatScreen } from "./src/screens/ChatScreen";
+import { ChatThreadScreen } from "./src/screens/ChatThreadScreen";
 import { colors } from "./src/theme";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -66,6 +67,11 @@ function AppNavigation() {
           name="PartDetail"
           component={PartDetailScreen}
           options={{ title: "Объявление", headerBackTitle: "Назад" }}
+        />
+        <Stack.Screen
+          name="ChatThread"
+          component={ChatThreadScreen}
+          options={{ title: "Чат", headerBackTitle: "Назад" }}
         />
         <Stack.Screen
           name="Booking"

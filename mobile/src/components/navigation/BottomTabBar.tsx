@@ -4,10 +4,9 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 import { DEMO_MODE } from "../../config";
+import { api } from "../../api";
 import { storage } from "../../storage";
 import { colors } from "../../theme";
-
-const CHAT_UNREAD = 99;
 
 type TabKey = "Home" | "Favorites" | "Add" | "Chat" | "Profile";
 
@@ -40,18 +39,25 @@ function TabBadge({ text }: { text: string }) {
 export function BottomTabBar({ state, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
   const [favCount, setFavCount] = useState(0);
+  const [chatUnread, setChatUnread] = useState(0);
 
-  const loadFavCount = useCallback(async () => {
+  const loadCounts = useCallback(async () => {
     const [parts, masters] = await Promise.all([
       storage.getFavoritePartIds(),
       storage.getFavoriteMasterIds(),
     ]);
     setFavCount(parts.length + masters.length);
+    try {
+      const r = await api.getChatUnreadCount();
+      setChatUnread(r.count);
+    } catch {
+      setChatUnread(0);
+    }
   }, []);
 
   useEffect(() => {
-    loadFavCount();
-  }, [loadFavCount, state.index]);
+    loadCounts();
+  }, [loadCounts, state.index]);
 
   const bottomPad = Math.max(insets.bottom, Platform.OS === "android" ? 8 : 0);
 
@@ -75,7 +81,7 @@ export function BottomTabBar({ state, navigation }: BottomTabBarProps) {
           if (!focused && !event.defaultPrevented) {
             navigation.navigate(route.name);
           }
-          if (key === "Favorites") loadFavCount();
+          if (key === "Favorites" || key === "Chat") loadCounts();
         };
 
         if (key === "Add") {
@@ -101,7 +107,7 @@ export function BottomTabBar({ state, navigation }: BottomTabBarProps) {
           const n = favCount > 0 ? favCount : DEMO_MODE ? 18 : 0;
           badge = formatBadge(n);
         }
-        if (key === "Chat") badge = formatBadge(CHAT_UNREAD);
+        if (key === "Chat") badge = formatBadge(chatUnread);
 
         return (
           <Pressable

@@ -6,6 +6,13 @@ const TELEGRAM_MSG = encodeURIComponent(
   "Здравствуйте! Хочу выложить объявление на FTservice."
 );
 
+function escAttr(s) {
+  return String(s ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;");
+}
+
 function openModal(id) {
   document.getElementById(id)?.classList.add("open");
 }
@@ -203,8 +210,11 @@ function partDetailHTML(p) {
           ${p.address ? `<p>${icon("pin", "icon icon--sm")} ${escHtml(p.address)}</p>` : ""}
         </div>
         <div class="messenger-row part-detail__contacts">
-          <a class="btn btn--wa" data-whatsapp>WhatsApp</a>
-          <a class="btn btn--tg" data-telegram>Telegram</a>
+          <button type="button" class="btn btn--primary btn--chat" data-chat-part="${p.id}" data-chat-title="${escAttr(p.title)}">${icon("chat", "icon icon--sm icon--white")} Написать в чате на сайте</button>
+          <div class="part-detail__messengers">
+            <a class="btn btn--wa" data-whatsapp>WhatsApp</a>
+            <a class="btn btn--tg" data-telegram>Telegram</a>
+          </div>
         </div>
         <a href="parts.html" class="btn btn--outline">← К каталогу</a>
       </div>
@@ -281,11 +291,25 @@ function initFiltersNote() {
   }
 }
 
+function handleChatPartClick(btn) {
+  const partId = btn?.dataset?.chatPart;
+  if (!partId) return;
+  const title = btn.dataset.chatTitle || "";
+  if (typeof openPartChatFromWeb === "function") {
+    openPartChatFromWeb(partId, title);
+  } else {
+    location.href = `messages.html?start=${partId}`;
+  }
+}
+
 async function initPartDetail() {
   const params = new URLSearchParams(location.search);
   const id = params.get("id");
   const root = document.getElementById("part-detail-root");
   if (!id || !root) return false;
+
+  document.documentElement.classList.add("part-detail-mode");
+  document.body.classList.add("page--part-detail");
 
   const layout = document.querySelector(".page-layout");
   if (layout) layout.style.display = "none";
@@ -554,6 +578,14 @@ async function initHomeData() {
     if (nums[2] && parts.length) nums[2].textContent = parts.length >= 100 ? "100+" : String(parts.length);
   }
 }
+
+document.addEventListener("click", (e) => {
+  const chatBtn = e.target.closest("[data-chat-part]");
+  if (!chatBtn) return;
+  e.preventDefault();
+  e.stopPropagation();
+  handleChatPartClick(chatBtn);
+});
 
 document.addEventListener("DOMContentLoaded", async () => {
   initModals();

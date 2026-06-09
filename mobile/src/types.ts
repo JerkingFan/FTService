@@ -70,6 +70,27 @@ export interface BookingPayload {
   problem?: string | null;
 }
 
+export interface ChatMessage {
+  id: number;
+  conversation_id: number;
+  sender_id: number;
+  body: string;
+  created_at: string;
+  is_mine: boolean;
+}
+
+export interface Conversation {
+  id: number;
+  part_id: number;
+  part_title: string;
+  part_image_url: string | null;
+  peer_name: string;
+  peer_id: number;
+  last_message: string | null;
+  last_message_at: string | null;
+  unread_count: number;
+}
+
 export interface SavedSearch {
   id: string;
   label: string;

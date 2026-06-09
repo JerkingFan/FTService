@@ -8,6 +8,8 @@ import type {
   Master,
   Part,
   User,
+  Conversation,
+  ChatMessage,
 } from "./types";
 import { enrichPartImages } from "./utils/stockImages";
 import { API_BASE } from "./config";
@@ -161,6 +163,20 @@ export const liveApi = {
     }>("/me/saved-searches", { method: "POST", body: JSON.stringify(entry) }),
   removeSavedSearch: (id: number) =>
     request(`/me/saved-searches/${id}`, { method: "DELETE" }),
+  getChatUnreadCount: () => request<{ count: number }>("/chat/unread-count"),
+  getConversations: () => request<Conversation[]>("/chat/conversations"),
+  startConversation: (partId: number, message?: string) =>
+    request<Conversation>("/chat/conversations", {
+      method: "POST",
+      body: JSON.stringify({ part_id: partId, message: message || null }),
+    }),
+  getChatMessages: (conversationId: number) =>
+    request<ChatMessage[]>(`/chat/conversations/${conversationId}/messages`),
+  sendChatMessage: (conversationId: number, body: string) =>
+    request<ChatMessage>(`/chat/conversations/${conversationId}/messages`, {
+      method: "POST",
+      body: JSON.stringify({ body }),
+    }),
   logout: async () => {
     await tokenStorage.clear();
   },

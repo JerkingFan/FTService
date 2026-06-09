@@ -4,6 +4,7 @@ from app.models.master import Master
 from app.models.booking import Booking, BookingStatus
 from app.models.repair import RepairRecord
 from app.models.engagement import FavoritePart, FavoriteMaster, ViewedPart, SavedSearch
+from app.models.chat import Conversation, ChatMessage
 
 __all__ = [
     "User",
@@ -20,4 +21,6 @@ __all__ = [
     "FavoriteMaster",
     "ViewedPart",
     "SavedSearch",
+    "Conversation",
+    "ChatMessage",
 ]

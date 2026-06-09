@@ -16,6 +16,7 @@ export type RootStackParamList = {
   Login: undefined;
   Register: undefined;
   SubmitPart: undefined;
+  ChatThread: { conversationId: number; title?: string; peerName?: string };
 };
 
 export type TabParamList = {

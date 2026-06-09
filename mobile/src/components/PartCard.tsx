@@ -1,11 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Ionicons } from "@expo/vector-icons";
+import type { RootStackParamList } from "../navigation/types";
 import type { Part } from "../types";
 import { PartImageCarousel } from "./PartImageCarousel";
 import { colors, radius, typography, CATEGORY_COLORS, spacing } from "../theme";
 import { conditionLabel, formatPrice, getCategory } from "../utils/format";
 import { storage } from "../storage";
+import { openPartChat } from "../utils/chatNavigation";
+import { showSellerContactMenu } from "../utils/sellerContact";
 
 interface Props {
   part: Part;
@@ -14,6 +19,7 @@ interface Props {
 }
 
 export function PartCard({ part, onPress, compact }: Props) {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const cat = getCategory(part.category);
   const catColor = CATEGORY_COLORS[part.category] || colors.orange;
   const images = part.images?.length ? part.images : part.image_url ? [part.image_url] : [];
@@ -32,16 +38,21 @@ export function PartCard({ part, onPress, compact }: Props) {
     setFav(next);
   };
 
+  const onWriteSeller = () => {
+    openPartChat(part, navigation);
+  };
+
+  const onMoreContact = () => {
+    showSellerContactMenu(part, navigation);
+  };
+
   const carouselHeight = compact ? 120 : 200;
   const listPad = spacing.md * 2;
   const compactWidth = 168;
 
   if (compact) {
     return (
-      <Pressable
-        style={({ pressed }) => [styles.compact, pressed && styles.pressed]}
-        onPress={onPress}
-      >
+      <View style={styles.compact}>
         <View style={styles.compactCarousel}>
           <PartImageCarousel
             images={images}
@@ -49,12 +60,16 @@ export function PartCard({ part, onPress, compact }: Props) {
             fallbackColor={catColor}
             height={carouselHeight}
             width={compactWidth}
+            showArrows={images.length > 1}
           />
           <Pressable style={styles.favBtn} onPress={toggleFav} hitSlop={10}>
             <Ionicons name={fav ? "heart" : "heart-outline"} size={16} color="#fff" />
           </Pressable>
         </View>
-        <View style={styles.compactBody}>
+        <Pressable
+          style={({ pressed }) => [styles.compactBody, pressed && styles.pressed]}
+          onPress={onPress}
+        >
           <View style={styles.topRow}>
             <Text style={[styles.badge, part.condition === "new" && styles.badgeNew]}>
               {conditionLabel(part.condition)}
@@ -64,13 +79,16 @@ export function PartCard({ part, onPress, compact }: Props) {
           <Text style={styles.compactTitle} numberOfLines={2}>
             {part.title}
           </Text>
-        </View>
-      </Pressable>
+          <Pressable style={styles.writeBtnCompact} onPress={onWriteSeller}>
+            <Ionicons name="chatbubble-ellipses-outline" size={14} color={colors.orange} />
+          </Pressable>
+        </Pressable>
+      </View>
     );
   }
 
   return (
-    <Pressable style={({ pressed }) => [styles.card, pressed && styles.pressed]} onPress={onPress}>
+    <View style={styles.card}>
       <View style={styles.carouselWrap}>
         <PartImageCarousel
           images={images}
@@ -78,6 +96,7 @@ export function PartCard({ part, onPress, compact }: Props) {
           fallbackColor={catColor}
           height={carouselHeight}
           horizontalPadding={listPad}
+          showArrows
         />
         {part.verified ? (
           <View style={styles.verifiedBadge}>
@@ -90,7 +109,7 @@ export function PartCard({ part, onPress, compact }: Props) {
         </Pressable>
       </View>
 
-      <View style={styles.body}>
+      <Pressable style={({ pressed }) => [styles.body, pressed && styles.pressed]} onPress={onPress}>
         <View style={styles.topRow}>
           <Text style={[styles.badge, part.condition === "new" && styles.badgeNew]}>
             {conditionLabel(part.condition)}
@@ -118,13 +137,22 @@ export function PartCard({ part, onPress, compact }: Props) {
           </Text>
         </View>
         <View style={styles.bottomRow}>
-          <Text style={styles.seller} numberOfLines={1}>
-            {part.seller}
-          </Text>
-          <Ionicons name="chevron-forward" size={18} color={colors.border} />
+          <View style={styles.sellerCol}>
+            <Text style={styles.sellerLabel}>Продавец</Text>
+            <Text style={styles.seller} numberOfLines={1}>
+              {part.seller}
+            </Text>
+          </View>
+          <Pressable style={styles.writeBtn} onPress={onWriteSeller}>
+            <Ionicons name="chatbubble-ellipses" size={16} color="#fff" />
+            <Text style={styles.writeBtnText}>В чат</Text>
+          </Pressable>
+          <Pressable style={styles.moreBtn} onPress={onMoreContact} hitSlop={8}>
+            <Ionicons name="logo-whatsapp" size={18} color={colors.green} />
+          </Pressable>
         </View>
-      </View>
-    </Pressable>
+      </Pressable>
+    </View>
   );
 }
 
@@ -148,7 +176,12 @@ const styles = StyleSheet.create({
   },
   pressed: { opacity: 0.94 },
   carouselWrap: { position: "relative" },
-  compactCarousel: { position: "relative", borderTopLeftRadius: radius.lg, borderTopRightRadius: radius.lg, overflow: "hidden" },
+  compactCarousel: {
+    position: "relative",
+    borderTopLeftRadius: radius.lg,
+    borderTopRightRadius: radius.lg,
+    overflow: "hidden",
+  },
   verifiedBadge: {
     position: "absolute",
     top: 10,
@@ -202,12 +235,40 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    gap: 10,
     marginTop: 4,
-    paddingTop: 8,
+    paddingTop: 10,
     borderTopWidth: 1,
     borderTopColor: colors.borderLight,
   },
-  seller: { flex: 1, fontSize: 13, color: colors.textSecondary, fontWeight: "600", marginRight: 8 },
+  sellerCol: { flex: 1 },
+  sellerLabel: { fontSize: 11, color: colors.textMuted, marginBottom: 2 },
+  seller: { fontSize: 14, color: colors.text, fontWeight: "700" },
+  writeBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    backgroundColor: colors.orange,
+    borderRadius: radius.md,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+  },
+  writeBtnText: { color: "#fff", fontSize: 13, fontWeight: "800" },
+  moreBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.borderLight,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.bg,
+  },
+  writeBtnCompact: {
+    alignSelf: "flex-start",
+    marginTop: 4,
+    padding: 4,
+  },
   price: { ...typography.price, fontSize: 18, color: colors.orange },
   compactPrice: { fontSize: 14, fontWeight: "800", color: colors.orange },
 });
