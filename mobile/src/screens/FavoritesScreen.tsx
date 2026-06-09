@@ -31,7 +31,7 @@ type FavMode = "parts" | "masters";
 const DEMO_SEARCHES: Omit<SavedSearch, "id" | "createdAt">[] = [
   { label: "Запчасти", q: "Запчасти" },
   { label: "Toyota Corolla", q: "Toyota Corolla" },
-  { label: "Тормозные колодки", q: "колодки", category: "brakes" },
+  { label: "Тормозные колодки", q: "колодки", category: "general" },
 ];
 
 export function FavoritesScreen({ navigation }: Props) {

@@ -1,9 +1,9 @@
 const PARTS = [
   { id: 1, title: "Генератор Toyota Camry 40 2.4", part_number: "27060-0H010", price: 8500, condition: "used", category: "electrical", location: "рынок Кудайберген", seller: "Азамат К.", verified: true, car: "Toyota Camry", fits: ["Toyota Camry 40", "Lexus ES350"], phone: "+996555100101", working_hours: "09:00–18:00" },
-  { id: 2, title: "Передний бампер Honda Accord 8", part_number: "71110-TA0-A00", price: 12000, condition: "used", category: "body", location: "Джал", seller: "Разбор «Авто+»", verified: true, car: "Honda Accord", fits: ["Honda Accord 8"] },
+  { id: 2, title: "Передний бампер Honda Accord 8", part_number: "71110-TA0-A00", price: 12000, condition: "used", category: "general", location: "Джал", seller: "Разбор «Авто+»", verified: true, car: "Honda Accord", fits: ["Honda Accord 8"] },
   { id: 3, title: "Двигатель 1NZ-FE 1.5 б/у", part_number: "1NZ-FE", price: 95000, condition: "used", category: "engine", location: "рынок Кудайберген", seller: "Эрлан М.", verified: true, car: "Toyota", fits: ["Toyota Vitz", "Toyota Yaris"] },
-  { id: 4, title: "Тормозные колодки передние — новые", part_number: "04465-02220", price: 3200, condition: "new", category: "brakes", location: "Орто-Сай", seller: "Импорт KG", verified: true, car: "универсальные", fits: ["Toyota Corolla"] },
-  { id: 5, title: "Фара левая Hyundai Solaris", part_number: "92101-4L000", price: 6500, condition: "used", category: "body", location: "рынок Кудайберген", seller: "Бакыт Т.", verified: true, car: "Hyundai Solaris", fits: ["Hyundai Solaris", "Hyundai Accent"] },
+  { id: 4, title: "Тормозные колодки передние — новые", part_number: "04465-02220", price: 3200, condition: "new", category: "general", location: "Орто-Сай", seller: "Импорт KG", verified: true, car: "универсальные", fits: ["Toyota Corolla"] },
+  { id: 5, title: "Фара левая Hyundai Solaris", part_number: "92101-4L000", price: 6500, condition: "used", category: "general", location: "рынок Кудайберген", seller: "Бакыт Т.", verified: true, car: "Hyundai Solaris", fits: ["Hyundai Solaris", "Hyundai Accent"] },
   { id: 6, title: "Стартер Nissan Almera Classic", part_number: "23300-EE00A", price: 4800, condition: "used", category: "electrical", location: "Асанбай", seller: "Нурбек А.", verified: true, car: "Nissan Almera" },
   { id: 7, title: "Радиатор охлаждения Mercedes W210", part_number: "2105000303", price: 15000, condition: "used", category: "cooling", location: "рынок Кудайберген", seller: "Разбор «Авто+»", verified: true, car: "Mercedes E-class" },
   { id: 8, title: "Амортизатор передний левый VW Polo", part_number: "6R0413031", price: 5500, condition: "used", category: "suspension", location: "Джал", seller: "Азамат К.", verified: true, car: "VW Polo" },
@@ -20,13 +20,21 @@ const MASTERS = [
 const CATEGORIES = [
   { id: "engine", name: "Двигатель", abbr: "ДВ" },
   { id: "electrical", name: "Электрика", abbr: "ЭЛ" },
-  { id: "body", name: "Кузов", abbr: "КУ" },
-  { id: "brakes", name: "Тормоза", abbr: "ТР" },
+  { id: "general", name: "Все автозапчасти", abbr: "АЗ" },
   { id: "suspension", name: "Подвеска", abbr: "ПД" },
   { id: "cooling", name: "Охлаждение", abbr: "ОХ" },
   { id: "transmission", name: "КПП", abbr: "КП" },
   { id: "interior", name: "Салон", abbr: "СА" },
+  { id: "wheels_tires", name: "Диски и шины", abbr: "ДШ" },
+  { id: "fluids", name: "Масло и жидкость", abbr: "МЖ" },
 ];
+
+const LEGACY_CATEGORY_IDS = {
+  body: "general",
+  brakes: "general",
+  wheels: "wheels_tires",
+  tires: "wheels_tires",
+};
 
 const WHATSAPP = "996700000000";
 const TELEGRAM = "ftservice_kg";
@@ -36,7 +44,8 @@ function formatPrice(n) {
 }
 
 function getCategory(id) {
-  return CATEGORIES.find(x => x.id === id) || { abbr: "—", name: "Прочее" };
+  const normalized = LEGACY_CATEGORY_IDS[id] || id;
+  return CATEGORIES.find((x) => x.id === normalized) || { abbr: "—", name: "Прочее" };
 }
 
 function getInitials(name) {

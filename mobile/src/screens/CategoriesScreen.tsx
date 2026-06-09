@@ -24,11 +24,13 @@ const ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
   all: "apps-outline",
   engine: "speedometer-outline",
   electrical: "flash-outline",
-  body: "car-sport-outline",
-  brakes: "disc-outline",
+  general: "construct-outline",
   suspension: "git-compare-outline",
   cooling: "snow-outline",
   transmission: "swap-horizontal-outline",
+  interior: "car-outline",
+  wheels_tires: "disc-outline",
+  fluids: "water-outline",
 };
 
 export function CategoriesScreen({ navigation }: Props) {

@@ -1,12 +1,17 @@
 const CATEGORY_LABELS = {
   engine: "Двигатель",
   electrical: "Электрика",
-  body: "Кузов",
-  brakes: "Тормоза",
+  general: "Все автозапчасти",
   suspension: "Подвеска",
   cooling: "Охлаждение",
   transmission: "КПП",
   interior: "Салон",
+  wheels_tires: "Диски и шины",
+  fluids: "Масло и жидкость",
+  body: "Все автозапчасти",
+  brakes: "Все автозапчасти",
+  wheels: "Диски и шины",
+  tires: "Диски и шины",
 };
 
 const CONDITION_LABELS = { used: "Б/у", new: "Новое" };

@@ -65,12 +65,17 @@ function heroIllustration() {
 const CATEGORY_ICON = {
   engine: "engine",
   electrical: "electrical",
-  body: "body",
-  brakes: "brakes",
+  general: "body",
   suspension: "suspension",
   cooling: "cooling",
   transmission: "transmission",
   interior: "interior",
+  wheels_tires: "brakes",
+  fluids: "cooling",
+  body: "body",
+  brakes: "brakes",
+  wheels: "brakes",
+  tires: "brakes",
 };
 
 function categoryIcon(id, className = "icon icon--lg") {

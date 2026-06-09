@@ -5,7 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.auth import get_optional_user, require_roles
-from app.categories import CATEGORIES
+from app.categories import CATEGORIES, category_ids_for_filter
 from app.database import get_db
 from app.models import Part, PartCondition, PartStatus, PartSubmission, User, UserRole
 from app.parts_query import matches_part, sort_parts
@@ -38,7 +38,11 @@ def list_parts(
 ):
     stmt = select(Part).where(Part.status == PartStatus.published)
     if category and category != "all":
-        stmt = stmt.where(Part.category == category)
+        cat_ids = category_ids_for_filter(category)
+        if len(cat_ids) == 1:
+            stmt = stmt.where(Part.category == cat_ids[0])
+        else:
+            stmt = stmt.where(Part.category.in_(cat_ids))
     if condition:
         stmt = stmt.where(Part.condition == condition)
     if min_price:

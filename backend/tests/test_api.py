@@ -40,7 +40,7 @@ def test_config():
 def test_categories_count():
     r = client.get("/api/parts/categories")
     assert r.status_code == 200
-    assert len(r.json()) >= 10
+    assert len(r.json()) == 9
 
 
 def test_parts_paginated():

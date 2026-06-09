@@ -3,6 +3,8 @@
 from sqlalchemy import inspect, text
 from sqlalchemy.engine import Engine
 
+from app.categories import CATEGORY_REMAP
+
 
 def _column_names(engine: Engine, table: str) -> set[str]:
     insp = inspect(engine)
@@ -56,3 +58,19 @@ def run_migrations(engine: Engine) -> None:
         ]:
             if name not in master_cols:
                 _add_column(engine, "masters", ddl)
+
+    _remap_categories(engine)
+
+
+def _remap_categories(engine: Engine) -> None:
+    for old_id, new_id in CATEGORY_REMAP.items():
+        with engine.begin() as conn:
+            conn.execute(
+                text("UPDATE parts SET category = :new_id WHERE category = :old_id"),
+                {"old_id": old_id, "new_id": new_id},
+            )
+            if inspect(engine).has_table("part_submissions"):
+                conn.execute(
+                    text("UPDATE part_submissions SET category = :new_id WHERE category = :old_id"),
+                    {"old_id": old_id, "new_id": new_id},
+                )

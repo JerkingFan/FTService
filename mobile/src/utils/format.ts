@@ -10,29 +10,39 @@ export const CATEGORIES = [
   { id: "all", name: "Все", abbr: "••" },
   { id: "engine", name: "Двигатель", abbr: "ДВ" },
   { id: "electrical", name: "Электрика", abbr: "ЭЛ" },
-  { id: "body", name: "Кузов", abbr: "КУ" },
-  { id: "brakes", name: "Тормоза", abbr: "ТР" },
+  { id: "general", name: "Все автозапчасти", abbr: "АЗ" },
   { id: "suspension", name: "Подвеска", abbr: "ПД" },
   { id: "cooling", name: "Охлаждение", abbr: "ОХ" },
   { id: "transmission", name: "КПП", abbr: "КП" },
-  { id: "wheels", name: "Диски", abbr: "ДК" },
-  { id: "tires", name: "Шины", abbr: "ШН" },
   { id: "interior", name: "Салон", abbr: "СА" },
+  { id: "wheels_tires", name: "Диски и шины", abbr: "ДШ" },
+  { id: "fluids", name: "Масло и жидкость", abbr: "МЖ" },
 ];
 
+const LEGACY_CATEGORY_IDS: Record<string, string> = {
+  body: "general",
+  brakes: "general",
+  wheels: "wheels_tires",
+  tires: "wheels_tires",
+};
+
 export function getCategory(id: string) {
-  return CATEGORIES.find((c) => c.id === id) || { id, name: "Прочее", abbr: "—" };
+  const normalized = LEGACY_CATEGORY_IDS[id] || id;
+  return CATEGORIES.find((c) => c.id === normalized) || { id, name: "Прочее", abbr: "—" };
 }
 
 export const CATEGORY_NAMES: Record<string, string> = {
   engine: "Двигатель",
   electrical: "Электрика",
-  body: "Кузов",
-  brakes: "Тормоза",
+  general: "Все автозапчасти",
   suspension: "Подвеска",
   cooling: "Охлаждение",
   transmission: "КПП",
   interior: "Салон",
-  wheels: "Диски",
-  tires: "Шины",
+  wheels_tires: "Диски и шины",
+  fluids: "Масло и жидкость",
+  body: "Все автозапчасти",
+  brakes: "Все автозапчасти",
+  wheels: "Диски и шины",
+  tires: "Диски и шины",
 };

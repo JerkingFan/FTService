@@ -83,12 +83,15 @@ export const typography = {
 export const CATEGORY_COLORS: Record<string, string> = {
   engine: "#D84315",
   electrical: "#F9A825",
-  body: "#546E7A",
-  brakes: "#C62828",
+  general: "#546E7A",
   suspension: "#6A1B9A",
   cooling: "#0277BD",
   transmission: "#2E7D32",
   interior: "#5D4037",
+  wheels_tires: "#3949AB",
+  fluids: "#00838F",
+  body: "#546E7A",
+  brakes: "#546E7A",
   wheels: "#3949AB",
-  tires: "#455A64",
+  tires: "#3949AB",
 };

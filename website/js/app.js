@@ -308,12 +308,24 @@ async function initPartDetail() {
   return true;
 }
 
+async function populateCategoryFilter() {
+  const sel = document.querySelector("[name=category]");
+  if (!sel) return;
+  const list = (await loadCategories()) || CATEGORIES;
+  const current = sel.value;
+  sel.innerHTML =
+    '<option value="all">Все категории</option>' +
+    list.map((c) => `<option value="${c.id}">${c.name}</option>`).join("");
+  if (current) sel.value = current;
+}
+
 async function initFilters() {
   if (await initPartDetail()) return;
 
   const grid = document.getElementById("parts-grid");
   if (!grid) return;
   initFiltersNote();
+  await populateCategoryFilter();
 
   const params = new URLSearchParams(location.search);
   const qParam = params.get("q") || "";
