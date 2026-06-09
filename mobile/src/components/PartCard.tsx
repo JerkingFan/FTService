@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Image, Platform, Pressable, StyleSheet, Text, View } from "react-native";
+import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import type { Part } from "../types";
-import { colors, radius, typography, CATEGORY_COLORS } from "../theme";
-import { conditionLabel, formatPrice } from "../utils/format";
-import { getCategory } from "../utils/format";
+import { PartImageCarousel } from "./PartImageCarousel";
+import { colors, radius, typography, CATEGORY_COLORS, spacing } from "../theme";
+import { conditionLabel, formatPrice, getCategory } from "../utils/format";
 import { storage } from "../storage";
 
 interface Props {
@@ -17,8 +17,6 @@ export function PartCard({ part, onPress, compact }: Props) {
   const cat = getCategory(part.category);
   const catColor = CATEGORY_COLORS[part.category] || colors.orange;
   const images = part.images?.length ? part.images : part.image_url ? [part.image_url] : [];
-  const cover = images[0] || null;
-  const photoCount = images.length;
   const [fav, setFav] = useState(false);
 
   useEffect(() => {
@@ -34,63 +32,64 @@ export function PartCard({ part, onPress, compact }: Props) {
     setFav(next);
   };
 
+  const carouselHeight = compact ? 120 : 200;
+  const listPad = spacing.md * 2;
+  const compactWidth = 168;
+
   if (compact) {
     return (
       <Pressable
         style={({ pressed }) => [styles.compact, pressed && styles.pressed]}
         onPress={onPress}
       >
-        <View style={[styles.thumb, { backgroundColor: catColor }]}>
-          {cover ? (
-            <Image source={{ uri: cover }} style={styles.cover} />
-          ) : (
-            <Text style={styles.thumbAbbr}>{cat.abbr}</Text>
-          )}
-          <Pressable style={styles.favBtnCompact} onPress={toggleFav} hitSlop={10}>
-            <Ionicons name={fav ? "heart" : "heart-outline"} size={18} color="#fff" />
+        <View style={styles.compactCarousel}>
+          <PartImageCarousel
+            images={images}
+            fallbackAbbr={cat.abbr}
+            fallbackColor={catColor}
+            height={carouselHeight}
+            width={compactWidth}
+          />
+          <Pressable style={styles.favBtn} onPress={toggleFav} hitSlop={10}>
+            <Ionicons name={fav ? "heart" : "heart-outline"} size={16} color="#fff" />
           </Pressable>
         </View>
         <View style={styles.compactBody}>
-          <View style={styles.badgeRow}>
+          <View style={styles.topRow}>
             <Text style={[styles.badge, part.condition === "new" && styles.badgeNew]}>
               {conditionLabel(part.condition)}
             </Text>
+            <Text style={styles.compactPrice}>{formatPrice(part.price)}</Text>
           </View>
           <Text style={styles.compactTitle} numberOfLines={2}>
             {part.title}
           </Text>
-          <Text style={styles.compactPrice}>{formatPrice(part.price)}</Text>
         </View>
       </Pressable>
     );
   }
 
   return (
-    <Pressable
-      style={({ pressed }) => [styles.card, pressed && styles.pressed]}
-      onPress={onPress}
-    >
-      <View style={[styles.thumbLg, { backgroundColor: catColor }]}>
-        {cover ? (
-          <Image source={{ uri: cover }} style={styles.coverLg} resizeMode="cover" />
-        ) : (
-          <Text style={styles.thumbAbbrLg}>{cat.abbr}</Text>
-        )}
-        {photoCount > 1 ? (
-          <View style={styles.photoBadge}>
-            <Ionicons name="images-outline" size={11} color="#fff" />
-            <Text style={styles.photoBadgeText}>{photoCount}</Text>
-          </View>
-        ) : null}
+    <Pressable style={({ pressed }) => [styles.card, pressed && styles.pressed]} onPress={onPress}>
+      <View style={styles.carouselWrap}>
+        <PartImageCarousel
+          images={images}
+          fallbackAbbr={cat.abbr}
+          fallbackColor={catColor}
+          height={carouselHeight}
+          horizontalPadding={listPad}
+        />
         {part.verified ? (
-          <View style={styles.verifiedDot}>
-            <Ionicons name="shield-checkmark" size={14} color="#fff" />
+          <View style={styles.verifiedBadge}>
+            <Ionicons name="shield-checkmark" size={13} color="#fff" />
+            <Text style={styles.verifiedText}>Проверено</Text>
           </View>
         ) : null}
         <Pressable style={styles.favBtn} onPress={toggleFav} hitSlop={10}>
-          <Ionicons name={fav ? "heart" : "heart-outline"} size={18} color="#fff" />
+          <Ionicons name={fav ? "heart" : "heart-outline"} size={20} color="#fff" />
         </Pressable>
       </View>
+
       <View style={styles.body}>
         <View style={styles.topRow}>
           <Text style={[styles.badge, part.condition === "new" && styles.badgeNew]}>
@@ -103,12 +102,21 @@ export function PartCard({ part, onPress, compact }: Props) {
         </Text>
         {part.part_number ? (
           <Text style={styles.oem} numberOfLines={1}>
-            {part.part_number}
+            OEM {part.part_number}
           </Text>
         ) : null}
-        <Text style={styles.metaLine} numberOfLines={1}>
-          {part.car} · {part.location}
-        </Text>
+        <View style={styles.metaRow}>
+          <Ionicons name="car-outline" size={14} color={colors.textMuted} />
+          <Text style={styles.metaText} numberOfLines={1}>
+            {part.car}
+          </Text>
+        </View>
+        <View style={styles.metaRow}>
+          <Ionicons name="location-outline" size={14} color={colors.textMuted} />
+          <Text style={styles.metaText} numberOfLines={1}>
+            {part.location}
+          </Text>
+        </View>
         <View style={styles.bottomRow}>
           <Text style={styles.seller} numberOfLines={1}>
             {part.seller}
@@ -122,16 +130,15 @@ export function PartCard({ part, onPress, compact }: Props) {
 
 const styles = StyleSheet.create({
   card: {
-    flexDirection: "row",
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
-    marginBottom: 12,
+    marginBottom: 14,
     overflow: "hidden",
     borderWidth: 1,
     borderColor: colors.borderLight,
   },
   compact: {
-    width: 156,
+    width: 168,
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
     marginRight: 12,
@@ -139,83 +146,68 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.borderLight,
   },
-  pressed: { opacity: 0.92 },
-  thumb: { height: 88, alignItems: "center", justifyContent: "center" },
-  thumbLg: {
-    width: 100,
-    height: 120,
-    alignItems: "center",
-    justifyContent: "center",
-    position: "relative",
-  },
-  cover: { width: "100%", height: "100%", resizeMode: "cover" as const },
-  coverLg: { width: "100%", height: "100%" },
-  thumbAbbr: { color: "rgba(255,255,255,0.9)", fontSize: 18, fontWeight: "800" },
-  thumbAbbrLg: { color: "rgba(255,255,255,0.9)", fontSize: 22, fontWeight: "800" },
-  photoBadge: {
+  pressed: { opacity: 0.94 },
+  carouselWrap: { position: "relative" },
+  compactCarousel: { position: "relative", borderTopLeftRadius: radius.lg, borderTopRightRadius: radius.lg, overflow: "hidden" },
+  verifiedBadge: {
     position: "absolute",
-    bottom: 8,
-    left: 8,
+    top: 10,
+    right: 48,
     flexDirection: "row",
     alignItems: "center",
-    gap: 3,
-    backgroundColor: "rgba(0,0,0,0.55)",
-    borderRadius: 8,
-    paddingHorizontal: 6,
-    paddingVertical: 3,
-  },
-  photoBadgeText: { color: "#fff", fontSize: 11, fontWeight: "700" },
-  verifiedDot: {
-    position: "absolute",
-    bottom: 8,
-    right: 8,
+    gap: 4,
     backgroundColor: colors.verified,
-    borderRadius: 10,
-    padding: 3,
+    borderRadius: radius.full,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
   },
+  verifiedText: { color: "#fff", fontSize: 11, fontWeight: "700" },
   favBtn: {
     position: "absolute",
-    top: 8,
-    right: 8,
-    backgroundColor: "rgba(0,0,0,0.22)",
-    borderRadius: 14,
-    padding: 6,
+    top: 10,
+    right: 10,
+    backgroundColor: "rgba(0,0,0,0.35)",
+    borderRadius: 18,
+    padding: 7,
   },
-  favBtnCompact: {
-    position: "absolute",
-    top: 8,
-    right: 8,
-    backgroundColor: "rgba(0,0,0,0.22)",
-    borderRadius: 14,
-    padding: 6,
-  },
-  compactBody: { padding: 10 },
-  body: { flex: 1, padding: 12, paddingLeft: 12, justifyContent: "space-between" },
+  body: { padding: 14, gap: 6 },
+  compactBody: { padding: 10, gap: 4 },
   topRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 6,
   },
-  badgeRow: { marginBottom: 4 },
   badge: {
     fontSize: 10,
     fontWeight: "700",
     textTransform: "uppercase",
     color: colors.used,
     backgroundColor: colors.borderLight,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
+    paddingHorizontal: 7,
+    paddingVertical: 3,
     borderRadius: 4,
     overflow: "hidden",
   },
   badgeNew: { color: colors.new, backgroundColor: "#E8F0FE" },
-  title: { ...typography.body, fontWeight: "600", color: colors.text, marginBottom: 4 },
+  title: { ...typography.body, fontWeight: "700", color: colors.text, lineHeight: 21 },
   compactTitle: { fontSize: 13, fontWeight: "600", color: colors.text, lineHeight: 18, minHeight: 36 },
-  oem: { fontSize: 12, color: colors.textMuted, fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace", marginBottom: 4 },
-  metaLine: { fontSize: 12, color: colors.textMuted, marginTop: 4 },
-  bottomRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 8 },
-  seller: { flex: 1, fontSize: 12, color: colors.textSecondary, fontWeight: "600", marginRight: 8 },
-  price: { ...typography.price, fontSize: 17, color: colors.orange },
-  compactPrice: { fontSize: 15, fontWeight: "800", color: colors.orange, marginTop: 4 },
+  oem: {
+    fontSize: 12,
+    color: colors.textMuted,
+    fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",
+  },
+  metaRow: { flexDirection: "row", alignItems: "center", gap: 6 },
+  metaText: { flex: 1, fontSize: 13, color: colors.textSecondary },
+  bottomRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: 4,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: colors.borderLight,
+  },
+  seller: { flex: 1, fontSize: 13, color: colors.textSecondary, fontWeight: "600", marginRight: 8 },
+  price: { ...typography.price, fontSize: 18, color: colors.orange },
+  compactPrice: { fontSize: 14, fontWeight: "800", color: colors.orange },
 });

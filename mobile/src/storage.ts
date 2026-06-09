@@ -20,12 +20,17 @@ async function useServerSync(): Promise<boolean> {
   return !!(await tokenStorage.getToken());
 }
 
+function searchSignature(entry: Pick<SavedSearch, "label" | "q" | "category" | "part_number" | "car_fit">) {
+  return [entry.label, entry.q || "", entry.category || "", entry.part_number || "", entry.car_fit || ""].join("|");
+}
+
 function mapServerSearch(s: {
   id: number;
   label: string;
   q?: string | null;
   category?: string | null;
   part_number?: string | null;
+  car_fit?: string | null;
   created_at: string;
 }): SavedSearch {
   return {
@@ -34,6 +39,7 @@ function mapServerSearch(s: {
     q: s.q ?? undefined,
     category: s.category ?? undefined,
     part_number: s.part_number ?? undefined,
+    car_fit: s.car_fit ?? undefined,
     createdAt: new Date(s.created_at).getTime(),
   };
 }
@@ -124,7 +130,8 @@ export const storage = {
       id: `${Date.now()}`,
       createdAt: Date.now(),
     };
-    const next = [item, ...list.filter((s) => s.label !== entry.label)];
+    const sig = searchSignature(item);
+    const next = [item, ...list.filter((s) => searchSignature(s) !== sig)].slice(0, 30);
     await AsyncStorage.setItem(SAVED_SEARCHES_KEY, JSON.stringify(next));
     return item;
   },

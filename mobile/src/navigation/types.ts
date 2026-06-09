@@ -4,7 +4,15 @@ export type RootStackParamList = {
   Booking: { masterId: number; masterName: string };
   Masters: undefined;
   Messages: undefined;
-  Parts: { q?: string; part_number?: string; openFilters?: boolean; category?: string } | undefined;
+  Parts:
+    | {
+        q?: string;
+        part_number?: string;
+        car_fit?: string;
+        openFilters?: boolean;
+        category?: string;
+      }
+    | undefined;
   Login: undefined;
   Register: undefined;
   SubmitPart: undefined;

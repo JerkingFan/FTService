@@ -28,6 +28,7 @@ import type { Part } from "../types";
 import { colors, radius, spacing, typography } from "../theme";
 import { storage } from "../storage";
 import { CATEGORIES, getCategory } from "../utils/format";
+import { rememberSearch } from "../utils/savedSearch";
 
 type Nav = CompositeNavigationProp<
   BottomTabNavigationProp<any, any>,
@@ -47,7 +48,7 @@ export function PartsScreen({ navigation, route }: Props) {
   const [loadingMore, setLoadingMore] = useState(false);
   const [q, setQ] = useState(route.params?.q || "");
   const [oem, setOem] = useState(route.params?.part_number || "");
-  const [carFit, setCarFit] = useState("");
+  const [carFit, setCarFit] = useState(route.params?.car_fit || "");
   const [category, setCategory] = useState(route.params?.category ?? "all");
   const [filtersOpen, setFiltersOpen] = useState(route.params?.openFilters ?? false);
   const [condition, setCondition] = useState<"all" | "used" | "new">("all");
@@ -75,6 +76,12 @@ export function PartsScreen({ navigation, route }: Props) {
       });
       setItems(data);
       setVisible(12);
+      await rememberSearch({
+        q,
+        part_number: oem,
+        car_fit: carFit,
+        category,
+      });
     } catch {
       setItems([]);
     } finally {
@@ -115,6 +122,14 @@ export function PartsScreen({ navigation, route }: Props) {
     if (route.params?.q !== undefined) setQ(route.params.q);
   }, [route.params?.q]);
 
+  useEffect(() => {
+    if (route.params?.part_number !== undefined) setOem(route.params.part_number);
+  }, [route.params?.part_number]);
+
+  useEffect(() => {
+    if (route.params?.car_fit !== undefined) setCarFit(route.params.car_fit);
+  }, [route.params?.car_fit]);
+
   const saveCurrentSearch = async () => {
     const label =
       q.trim() ||
@@ -126,8 +141,9 @@ export function PartsScreen({ navigation, route }: Props) {
       q: q.trim() || undefined,
       category: category !== "all" ? category : undefined,
       part_number: oem.trim() || undefined,
+      car_fit: carFit.trim() || undefined,
     });
-    Alert.alert("Сохранено", "Поиск добавлен в «Избранное → Сохранённые поиски»");
+    Alert.alert("Сохранено", "Поиск добавлен в «Избранное → Сохранённый поиск»");
   };
 
   const ListHeader = (

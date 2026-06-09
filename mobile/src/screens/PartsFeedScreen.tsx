@@ -24,6 +24,7 @@ import { toApiParams } from "../types/feedQuery";
 import { storage } from "../storage";
 import { colors, radius, spacing, typography } from "../theme";
 import { CATEGORIES, getCategory } from "../utils/format";
+import { rememberSearch } from "../utils/savedSearch";
 
 type Nav = NativeStackNavigationProp<RootStackParamList, "Parts">;
 type PartsRoute = RouteProp<RootStackParamList, "Parts">;
@@ -71,6 +72,12 @@ export function PartsFeedScreen({ navigation, route }: Props) {
       });
       setItems(data);
       setVisible(15);
+      await rememberSearch({
+        q,
+        part_number: oem,
+        car_fit: carFit,
+        category,
+      });
     } catch {
       setItems([]);
     } finally {
@@ -110,8 +117,9 @@ export function PartsFeedScreen({ navigation, route }: Props) {
       q: q.trim() || undefined,
       category: category !== "all" ? category : undefined,
       part_number: oem.trim() || undefined,
+      car_fit: carFit.trim() || undefined,
     });
-    Alert.alert("Сохранено", "Поиск добавлен в «Избранное → Сохранённые поиски»");
+    Alert.alert("Сохранено", "Поиск добавлен в «Избранное → Сохранённый поиск»");
   };
 
   const ListHeader = (

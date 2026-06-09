@@ -76,6 +76,7 @@ export interface SavedSearch {
   q?: string;
   category?: string;
   part_number?: string;
+  car_fit?: string;
   createdAt: number;
 }
 
